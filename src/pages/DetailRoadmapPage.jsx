@@ -4,60 +4,66 @@ import ReactFlow, {
   Controls,
   Background,
   applyEdgeChanges,
-  applyNodeChanges
+  applyNodeChanges,
 } from 'react-flow-renderer';
 import '../css/detailroadmap.css';
 import logo from '../assets/logo.png';
 
-// Sample roadmap data with status on nodes
+// Updated mock roadmap data structure
 const roadmap = {
+  id: 'roadmap1',          // tổng ID
+  idUser: 'user123',       // người sở hữu
+  share: 1,                // 0: không chia sẻ, 1: chia sẻ
+  topic: 'Competitive Programming',
+  level: 1,     // 0:Mới bắt đầu, 1:Trung cấp, 2:Nâng cao
+  duration: 2,  // 0:1 tháng, 1:3 tháng, 2:6 tháng
+  created: '03/05/2025',
+  progress: 15, // percent
   nodes: [
-    { id: '1', data: { label: 'HTML & CSS', status: 'done' }, position: { x: 0, y: 0 } },
-    { id: '2', data: { label: 'JavaScript cơ bản', status: 'done' }, position: { x: 0, y: 250 } },
-    { id: '3', data: { label: 'ES6+', status: 'done' }, position: { x: 500, y: 0 } },
-    { id: '4', data: { label: 'ReactJS', status: 'done' }, position: { x: 250, y: 150 } },
-    { id: '5', data: { label: 'State Management (Redux)', status: 'in-process' }, position: { x: 500, y: 150 } },
-    { id: '6', data: { label: 'Node.js & Express', status: 'todo' }, position: { x: 250, y: 300 } },
-    { id: '7', data: { label: 'Database (MongoDB)', status: 'todo' }, position: { x: 500, y: 300 } },
-    { id: '8', data: { label: 'Deployment & DevOps', status: 'todo' }, position: { x: 375, y: 450 } },
+    { idNote: '1', data: { label: 'HTML & CSS', status: 2, description: 'HTML (Hypertext Markup Language) là ngôn ngữ đánh dấu tiêu chuẩn...' }, position: { x: 0, y: 0 } },
+    { idNote: '2', data: { label: 'JavaScript cơ bản', status: 2, description: 'JavaScript cơ bản cho phép bạn tương tác với trang web...' }, position: { x: 250, y: 0 } },
+    { idNote: '3', data: { label: 'ES6+', status: 2, description: 'ES6+ giới thiệu arrow functions, let/const, template literals...' }, position: { x: 500, y: 0 } },
+    { idNote: '4', data: { label: 'ReactJS', status: 2, description: 'ReactJS là thư viện JavaScript để xây dựng giao diện người dùng...' }, position: { x: 250, y: 150 } },
+    { idNote: '5', data: { label: 'State Management (Redux)', status: 1, description: 'Redux giúp quản lý state toàn cục trong ứng dụng React...' }, position: { x: 500, y: 150 } },
+    { idNote: '6', data: { label: 'Node.js & Express', status: 0, description: 'Node.js & Express cho phép xây dựng backend bằng JavaScript...' }, position: { x: 250, y: 300 } },
+    { idNote: '7', data: { label: 'Database (MongoDB)', status: 0, description: 'MongoDB là NoSQL database lưu trữ tài liệu JSON...' }, position: { x: 500, y: 300 } },
+    { idNote: '8', data: { label: 'Deployment & DevOps', status: 0, description: 'CICD, Docker, Kubernetes để triển khai và vận hành...' }, position: { x: 375, y: 450 } },
   ],
   edges: [
-    { id: 'e1-2', source: '1', target: '2' },
-    { id: 'e2-3', source: '2', target: '3' },
-    { id: 'e3-4', source: '3', target: '4' },
-    { id: 'e4-5', source: '4', target: '5' },
-    { id: 'e4-6', source: '4', target: '6' },
-    { id: 'e6-7', source: '6', target: '7' },
-    { id: 'e5-8', source: '5', target: '8' },
-    { id: 'e7-8', source: '7', target: '8' },
+    { idEdge: 'e1-2', source: '1', target: '2' },
+    { idEdge: 'e2-3', source: '2', target: '3' },
+    { idEdge: 'e3-4', source: '3', target: '4' },
+    { idEdge: 'e4-5', source: '4', target: '5' },
+    { idEdge: 'e4-6', source: '4', target: '6' },
+    { idEdge: 'e6-7', source: '6', target: '7' },
+    { idEdge: 'e5-8', source: '5', target: '8' },
+    { idEdge: 'e7-8', source: '7', target: '8' },
   ],
 };
 
+const LEVELS = ['Mới bắt đầu', 'Trung cấp', 'Nâng cao'];
+const DURATIONS = ['1 tháng', '3 tháng', '6 tháng'];
+
 export default function DetailRoadmap() {
-  // initialize with styled nodes and animated edges
+  // Map idNote to id for React Flow compatibility
   const [nodes, setNodes] = useState(
-    roadmap.nodes.map(node => ({
-      ...node,
-      style: {
-        background:
-          node.data.status === 'todo'
-            ? 'var(--gray-100)'
-            : node.data.status === 'in-process'
-            ? 'var(--warning)'
-            : 'var(--success)',
-        color: node.data.status === 'todo' ? 'var(--gray-500)' : 'white',
-        padding: '0.75rem 1rem',
-        borderRadius: '0.5rem',
-        fontWeight: 500,
-      }
+    roadmap.nodes.map(n => ({
+      id: n.idNote,
+      data: n.data,
+      position: n.position,
+      draggable: true,
+      style: {},
     }))
   );
   const [edges, setEdges] = useState(
-    roadmap.edges.map(edge => ({
-      ...edge,
-      animated: true
+    roadmap.edges.map(e => ({
+      id: e.idEdge,
+      source: e.source,
+      target: e.target,
+      animated: true,
     }))
   );
+  const [selected, setSelected] = useState(null);
 
   const onNodesChange = useCallback(
     changes => setNodes(nds => applyNodeChanges(changes, nds)),
@@ -68,6 +74,38 @@ export default function DetailRoadmap() {
     []
   );
 
+  // style nodes by status
+  const styledNodes = nodes.map(node => {
+    let background = 'var(--gray-100)'; // todo
+    let color = 'var(--gray-500)';
+    if (node.data.status === 1) {
+      background = 'var(--warning)'; // in-process
+      color = 'black';
+    }
+    if (node.data.status === 2) {
+      background = 'var(--success)'; // done
+      color = 'black';
+    }
+    return {
+      ...node,
+      style: {
+        background,
+        color,
+        padding: '0.75rem 1rem',
+        borderRadius: '0.5rem',
+        fontWeight: 500,
+        cursor: 'pointer',
+      },
+    };
+  });
+
+  const styledEdges = edges.map(edge => {
+    const srcNode = nodes.find(n => n.id === edge.source);
+    return { ...edge, animated: srcNode?.data.status !== 2 };
+  });
+
+  const handleNodeClick = (_e, node) => setSelected(node);
+
   return (
     <div className="container">
       {/* Sidebar */}
@@ -77,41 +115,11 @@ export default function DetailRoadmap() {
           <span>RoadmapAI</span>
         </div>
         <nav className="sidebar-nav">
-          <a href="#" className="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-            <span>Trang chủ</span>
-          </a>
-          <a href="#" className="nav-item active">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-              <line x1="3" y1="9" x2="21" y2="9" />
-              <line x1="9" y1="21" x2="9" y2="9" />
-            </svg>
-            <span>Các lộ trình của tôi</span>
-          </a>
-          <a href="#" className="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-            <span>Lộ trình phổ biến</span>
-          </a>
-          <a href="#" className="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
-              <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
-            </svg>
-            <span>Bảng xếp hạng</span>
-          </a>
-          <a href="#" className="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-            <span>Cài đặt</span>
-          </a>
+          <a href="#" className="nav-item">Trang chủ</a>
+          <a href="#" className="nav-item active">Các lộ trình của tôi</a>
+          <a href="#" className="nav-item">Lộ trình phổ biến</a>
+          <a href="#" className="nav-item">Bảng xếp hạng</a>
+          <a href="#" className="nav-item">Cài đặt</a>
         </nav>
         <div className="user-profile">
           <div className="avatar">NT</div>
@@ -121,53 +129,48 @@ export default function DetailRoadmap() {
           </div>
         </div>
       </aside>
+
+      {/* Main Content */}
       <main className="main">
         <header className="page-header">
-          <button className="btn btn-outline mr-4" onClick={() => window.history.back()}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <button className="btn btn-outline" onClick={() => window.history.back()}>
+            <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <h1 className="page-title">Lộ trình học Competitive Programming</h1>
+          <h1 className="page-title">{roadmap.topic}</h1>
           <div className="header-actions">
             <button className="btn btn-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-              Chia sẻ
+              </svg>Chỉnh sửa
             </button>
           </div>
         </header>
+
+        {/* Roadmap Overview */}
         <section className="roadmap-overview">
           <div className="roadmap-meta">
-            <div className="meta-item">
-              <span className="meta-label">Thời gian dự kiến</span>
-              <span className="meta-value">6 tháng</span>
-            </div>
-            <div className="meta-item">
-              <span className="meta-label">Ngày tạo</span>
-              <span className="meta-value">03/05/2025</span>
-            </div>
+            <div className="meta-item"><span className="meta-label">Trình độ</span><span className="meta-value">{LEVELS[roadmap.level]}</span></div>
+            <div className="meta-item"><span className="meta-label">Thời gian dự kiến</span><span className="meta-value">{DURATIONS[roadmap.duration]}</span></div>
+            <div className="meta-item"><span className="meta-label">Ngày tạo</span><span className="meta-value">{roadmap.created}</span></div>
           </div>
           <div className="progress-container">
-            <div className="progress-header">
-              <span className="progress-title">Tiến độ hoàn thành</span>
-              <span className="progress-percentage">15%</span>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-value" style={{ width: '15%' }} />
-            </div>
+            <div className="progress-header"><span className="progress-title">Tiến độ hoàn thành</span><span className="progress-percentage">{roadmap.progress}%</span></div>
+            <div className="progress-bar"><div className="progress-value" style={{ width: `${roadmap.progress}%` }} /></div>
           </div>
         </section>
+
         <section className="roadmap-visualization">
           <h2 className="roadmap-title">Sơ đồ lộ trình</h2>
           <div className="mindmap-container">
             <ReactFlow
-              nodes={nodes}
-              edges={edges.map(edge => ({ ...edge, animated: edge.animated && !(nodes.find(n => n.id === edge.source).data.status === 'done') }))}
+              nodes={styledNodes}
+              edges={styledEdges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
+              onNodeClick={handleNodeClick}
               fitView
               attributionPosition="bottom-left"
             >
@@ -176,6 +179,15 @@ export default function DetailRoadmap() {
               <Background color="#aaa" gap={16} />
             </ReactFlow>
           </div>
+          {selected && (
+            <div className="info-panel active">
+              <div className="info-header">
+                <h3 className="info-title">{selected.data.label}</h3>
+                <button className="info-close" onClick={() => setSelected(null)}>×</button>
+              </div>
+              <div className="info-section"><p>{selected.data.description}</p></div>
+            </div>
+          )}
         </section>
       </main>
     </div>
