@@ -1,13 +1,47 @@
 import '../css/home.css';
 import logo from '../assets/logo.png';
+import { useState } from 'react';
+import CreateRoadMapApi from '../api/RoadMapApi';
 
 export default function Home() {
+  const [topic, setTopic] = useState('');
+  const [level, setLevel] = useState('0');
+  const [duration, setDuration] = useState('0');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+
+  const { createRoadMap } = CreateRoadMapApi();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      // const userId = localStorage.getItem('userId');
+      const userId = 'userId1';
+      if (!userId) {
+        throw new Error('User not logged in. Please log in to create a roadmap.');
+      }
+
+      const data = await createRoadMap({ topic, userId, level, duration });
+      setSuccessMessage('Roadmap created successfully!');
+      console.log('Roadmap data:', data);
+
+    } catch (err) {
+      setError(err.message || 'Failed to create roadmap');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container">
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="logo">
-          {/* Thay SVG bằng img */}
           <img src={logo} alt="LearnEasy Logo" width="24" height="24" />
           <span>LearnEasy</span>
         </div>
@@ -117,7 +151,7 @@ export default function Home() {
 
         {/* Creator section */}
         <section className="creator-card">
-          <form className="creator-form">
+          <form className="creator-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label" htmlFor="topic-input">
                 Chủ đề bạn muốn tạo lộ trình
@@ -127,13 +161,21 @@ export default function Home() {
                 id="topic-input"
                 className="form-control"
                 placeholder="Ví dụ: Học lập trình JavaScript từ cơ bản đến nâng cao"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                required
               />
             </div>
             <div className="form-group">
               <label className="form-label" htmlFor="level-select">
                 Trình độ
               </label>
-              <select id="level-select" className="form-control">
+              <select
+                id="level-select"
+                className="form-control"
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+              >
                 <option value="0">Mới bắt đầu</option>
                 <option value="1">Trung cấp</option>
                 <option value="2">Nâng cao</option>
@@ -143,28 +185,41 @@ export default function Home() {
               <label className="form-label" htmlFor="duration-select">
                 Thời gian dự kiến
               </label>
-              <select id="duration-select" className="form-control">
+              <select
+                id="duration-select"
+                className="form-control"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+              >
                 <option value="0">1 tháng</option>
                 <option value="1">3 tháng</option>
                 <option value="2">6 tháng</option>
               </select>
             </div>
-            <button type="button" className="btn btn-primary">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <polygon points="10 8 16 12 10 16 10 8"></polygon>
-              </svg>
-              Tạo lộ trình học tập
+            {error && <p className="error-message" style={{ color: 'red' }}>{error}</p>}
+            {successMessage && <p className="success-message" style={{ color: 'green' }}>{successMessage}</p>}
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? (
+                'Đang tạo...'
+              ) : (
+                <>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                  </svg>
+                  Tạo lộ trình học tập
+                </>
+              )}
             </button>
           </form>
         </section>
