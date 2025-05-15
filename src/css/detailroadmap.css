@@ -261,3 +261,96 @@
         color: var(--gray-800);
         border: 1px solid var(--gray-300);
     }
+
+.info-panel {
+  /* từ fixed top 20px → sát đỉnh nội dung, bên phải sidebar (260px) */
+  position: fixed;
+  top: 0;
+  left: 260px;                    /* bằng width của .sidebar */
+  width: calc(100% - 260px);      /* full phần main */
+  height: 100vh;                  /* full chiều cao màn hình */
+  background: white;              /* đè lên nội dung */
+  border-radius: 0;               /* vuông góc sát cạnh */
+  box-shadow: none;               /* có thể tắt shadow hoặc giữ tùy ý */
+  padding: 24px;                  /* tăng padding cho rộng rãi */
+  overflow-y: auto;               /* kéo scroll nếu nội dung dài */
+  z-index: 1000;                  /* đảm bảo nổi trên tất cả */
+  font-size: 1.125rem;
+}
+
+    .info-panel .active {
+    display: block;
+    }
+
+    .info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--gray-200);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    }
+
+    .info-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--gray-800);
+    }
+
+    .info-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--gray-500);
+    }
+
+    .info-section {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--gray-600);
+    }
+
+    
+/* Ẩn margin top mặc định nếu có active */
+.info-panel.active {
+  display: block;
+}
+
+/* Thêm style cho selector */
+.status-selector {
+  margin-top: 1rem;
+}
+
+.status-selector select {
+  padding: 0.5rem;
+  border: 1px solid var(--gray-300);
+  border-radius: 0.25rem;
+  font-size: 0.95rem;
+}
+
+/* ➋ Tiêu đề lớn hơn */
+.info-panel .info-title {
+  font-size: 1.75rem;  /* từ 1.25rem lên 1.75rem */
+}
+
+/* ➌ Nội dung mô tả & trạng thái */
+.info-panel .info-section p {
+  font-size: 1.0625rem; /* ~17px */
+  line-height: 1.6;
+}
+
+/* ➍ Label & select trong status-selector */
+.status-selector label {
+  font-size: 1.0625rem;
+}
+
+.status-selector select {
+  font-size: 1.0625rem;
+  padding: 0.6rem 0.75rem; /* to hơn một chút */
+}
+
+/* ➎ Nút “×” đóng panel */
+.info-close {
+  font-size: 1.5rem; /* giữ hoặc tăng nếu muốn */
+}
