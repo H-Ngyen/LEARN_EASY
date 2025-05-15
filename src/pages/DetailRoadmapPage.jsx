@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -9,7 +9,7 @@ import ReactFlow, {
 import '../css/detailroadmap.css';
 import logo from '../assets/logo.png';
 
-// Updated mock roadmap data structure
+// Dữ liệu mẫu cho lộ trình
 const roadmap = {
   id: 'roadmap1',
   idUser: 'user123',
@@ -18,7 +18,6 @@ const roadmap = {
   level: 1,
   duration: 2,
   created: '03/05/2025',
-  progress: 15,
   nodes: [
     { idNote: '1', data: { label: 'HTML & CSS', status: 2, description: 'HTML (Hypertext Markup Language) là ngôn ngữ đánh dấu tiêu chuẩn...' }, position: { x: 0, y: 0 } },
     { idNote: '2', data: { label: 'JavaScript cơ bản', status: 2, description: 'JavaScript cơ bản cho phép bạn tương tác với trang web...' }, position: { x: 250, y: 0 } },
@@ -41,6 +40,7 @@ const roadmap = {
   ],
 };
 
+// Các hằng số cho trình độ và thời gian
 const LEVELS = ['Mới bắt đầu', 'Trung cấp', 'Nâng cao'];
 const DURATIONS = ['1 tháng', '3 tháng', '6 tháng'];
 
@@ -64,6 +64,7 @@ export default function DetailRoadmap() {
   );
   const [selected, setSelected] = useState(null);
 
+  // Xử lý thay đổi nodes và edges trong React Flow
   const onNodesChange = useCallback(
     changes => setNodes(nds => applyNodeChanges(changes, nds)),
     []
@@ -72,8 +73,33 @@ export default function DetailRoadmap() {
     changes => setEdges(eds => applyEdgeChanges(changes, eds)),
     []
   );
+  const handleNodeClick = (_e, node) => setSelected(node);
 
-  // style nodes by status
+  // Tính toán tiến độ hoàn thành
+  const progress = useMemo(() => {
+    const total = nodes.length;
+    if (total === 0) return 0;
+    const doneCount = nodes.filter(n => n.data.status === 2).length;
+    return Math.round((doneCount / total) * 100);
+  }, [nodes]);
+
+  // Thay đổi trạng thái của node được chọn
+  const handleStatusChange = (e) => {
+    const newStatus = parseInt(e.target.value, 10);
+    setNodes(nds =>
+      nds.map(n =>
+        n.id === selected.id
+          ? { ...n, data: { ...n.data, status: newStatus } }
+          : n
+      )
+    );
+    setSelected(sel => ({
+      ...sel,
+      data: { ...sel.data, status: newStatus }
+    }));
+  };
+
+  // Định kiểu cho nodes dựa trên trạng thái
   const styledNodes = nodes.map(node => {
     let background = 'var(--gray-100)';
     let color = 'var(--gray-500)';
@@ -98,29 +124,11 @@ export default function DetailRoadmap() {
     };
   });
 
+  // Định kiểu cho edges: chỉ animated nếu source chưa hoàn thành
   const styledEdges = edges.map(edge => {
     const srcNode = nodes.find(n => n.id === edge.source);
     return { ...edge, animated: srcNode?.data.status !== 2 };
   });
-
-  const handleNodeClick = (_e, node) => setSelected(node);
-
-    // ➊ Thêm handler để thay đổi status
-  const handleStatusChange = (e) => {
-    const newStatus = parseInt(e.target.value, 10);
-    // cập nhật cả trong danh sách nodes và selected
-    setNodes(nds =>
-      nds.map(n =>
-        n.id === selected.id
-          ? { ...n, data: { ...n.data, status: newStatus } }
-          : n
-      )
-    );
-    setSelected(sel => ({
-      ...sel,
-      data: { ...sel.data, status: newStatus }
-    }));
-  };
 
   return (
     <div className="container">
@@ -131,14 +139,14 @@ export default function DetailRoadmap() {
           <span>LearnEasy</span>
         </div>
         <nav className="sidebar-nav">
-          <a href="#" className="nav-item">
+          <a href="/" className="nav-item">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
             <span>Trang chủ</span>
           </a>
-          <a href="#" className="nav-item active">
+          <a href="/list" className="nav-item active">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
               <rect x={3} y={3} width={18} height={18} rx={2} ry={2} />
               <line x1={3} y1={9} x2={21} y2={9} />
@@ -176,7 +184,7 @@ export default function DetailRoadmap() {
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* Nội dung chính */}
       <main className="main">
         <header className="page-header">
           <button className="btn btn-outline" onClick={() => window.history.back()}>
@@ -195,7 +203,7 @@ export default function DetailRoadmap() {
           </div>
         </header>
 
-        {/* Roadmap Overview */}
+        {/* Tổng quan lộ trình */}
         <section className="roadmap-overview">
           <div className="roadmap-meta">
             <div className="meta-item"><span className="meta-label">Trình độ</span><span className="meta-value">{LEVELS[roadmap.level]}</span></div>
@@ -203,56 +211,59 @@ export default function DetailRoadmap() {
             <div className="meta-item"><span className="meta-label">Ngày tạo</span><span className="meta-value">{roadmap.created}</span></div>
           </div>
           <div className="progress-container">
-            <div className="progress-header"><span className="progress-title">Tiến độ hoàn thành</span><span className="progress-percentage">{roadmap.progress}%</span></div>
-            <div className="progress-bar"><div className="progress-value" style={{ width: `${roadmap.progress}%` }} /></div>
+            <div className="progress-header">
+              <span className="progress-title">Tiến độ hoàn thành</span>
+              <span className="progress-percentage">{progress}%</span>
+            </div>
+            <div className="progress-bar">
+              <div className="progress-value" style={{ width: `${progress}%` }} />
+            </div>
           </div>
         </section>
 
-             <section className="roadmap-visualization">
-        <h2 className="roadmap-title">Sơ đồ lộ trình</h2>
-        <div className="mindmap-container">
-          <ReactFlow
-            nodes={styledNodes}
-            edges={styledEdges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onNodeClick={handleNodeClick}
-            fitView
-            attributionPosition="bottom-left"
-          >
-            <MiniMap />
-            <Controls />
-            <Background color="#aaa" gap={16} />
-          </ReactFlow>
-        </div>
-
-        {selected && (
-          <div className="info-panel active">
-            <div className="info-header">
-              <h3 className="info-title">{selected.data.label}</h3>
-              <button className="info-close" onClick={() => setSelected(null)}>×</button>
-            </div>
-            <div className="info-section">
-              <div className="status-selector">
-                <label htmlFor="status-select"><strong>Chọn trạng thái:</strong> </label>
-                <select
-                  id="status-select"
-                  value={selected.data.status}
-                  onChange={handleStatusChange}
-                >
-                  <option value={0}>Todo</option>
-                  <option value={1}>In Process</option>
-                  <option value={2}>Done</option>
-                </select>
-              </div>
-              <p>
-                <strong>Mô tả:</strong> {selected.data.description}
-              </p>
-            </div>
+        {/* Hiển thị sơ đồ lộ trình */}
+        <section className="roadmap-visualization">
+          <h2 className="roadmap-title">Sơ đồ lộ trình</h2>
+          <div className="mindmap-container">
+            <ReactFlow
+              nodes={styledNodes}
+              edges={styledEdges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onNodeClick={handleNodeClick}
+              fitView
+              attributionPosition="bottom-left"
+            >
+              <MiniMap />
+              <Controls />
+              <Background color="#aaa" gap={16} />
+            </ReactFlow>
           </div>
-        )}
-      </section>
 
+          {selected && (
+            <div className="info-panel active">
+              <div className="info-header">
+                <h3 className="info-title">{selected.data.label}</h3>
+                <button className="info-close" onClick={() => setSelected(null)}>×</button>
+              </div>
+              <div className="info-section">
+                <div className="status-selector">
+                  <label htmlFor="status-select"><strong>Chọn trạng thái:</strong> </label>
+                  <select
+                    id="status-select"
+                    value={selected.data.status}
+                    onChange={handleStatusChange}
+                  >
+                    <option value={0}>Todo</option>
+                    <option value={1}>In Process</option>
+                    <option value={2}>Done</option>
+                  </select>
+                </div>
+                <p><strong>Mô tả:</strong> {selected.data.description}</p>
+              </div>
+            </div>
+          )}
+        </section>
       </main>
     </div>
   );

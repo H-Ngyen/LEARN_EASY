@@ -1,3 +1,4 @@
+/* src/css/topiclist.css */
 :root {
   --primary: #4F46E5;
   --primary-light: #818CF8;
@@ -115,9 +116,53 @@
   font-weight: 700;
 }
 
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none; /* loại bỏ gạch chân của link */
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #4338CA;
+}
+
 .create-button {
   font-size: 0.875rem;
   padding: 0.5rem 1rem;
+  text-decoration: none;
+}
+
+.continue-button {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.continue-button {
+  /* Dùng cùng style .btn-primary, không đặt trong ô hộp xanh lá */
+  background-color: var(--primary);
+  color: white;
+  padding: 0.5rem 1rem;
+}
+
+.continue-button:hover {
+  background-color: #4338CA;
 }
 
 /* Roadmap list */
@@ -223,9 +268,4 @@
 .card-footer {
   display: flex;
   justify-content: flex-end;
-}
-
-.continue-button {
-  font-size: 0.875rem;
-  padding: 0.5rem 1rem;
 }
