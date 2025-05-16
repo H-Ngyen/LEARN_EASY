@@ -22,6 +22,9 @@ export default function UserAPI() {
             }
 
             const data = await response.json();
+            if (data.user) {
+                localStorage.setItem('user', JSON.stringify(data.user));
+            }
             return data;
         } catch (error) {
             handleError(error);
@@ -44,11 +47,19 @@ export default function UserAPI() {
             }
 
             const data = await response.json();
+            if (data.user) {
+                localStorage.setItem('user', JSON.stringify(data.user));
+            }
             return data;
         } catch (error) {
             handleError(error);
         }
     };
 
-    return { loginUser, registerUser };
+    const getUserId = () => {
+        const user = localStorage.getItem('user');
+        return user ? JSON.parse(user).userId : null;
+    };
+
+    return { loginUser, registerUser, getUserId };
 }

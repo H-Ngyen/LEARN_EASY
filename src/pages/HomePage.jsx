@@ -1,8 +1,12 @@
 import '../css/home.css';
 import logo from '../assets/logo.png';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import CreateRoadMapApi from '../api/RoadMapApi';
+import UserAPI from '../api/UserAPI';
 import { useNavigate } from 'react-router-dom';
+
+const { createRoadMap } = CreateRoadMapApi();
+const { getUserId } = UserAPI();
 
 export default function Home() {
   const [topic, setTopic] = useState('');
@@ -11,38 +15,47 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-
-  const { createRoadMap } = CreateRoadMapApi();
+  const [userName, setUserName] = useState('Người dùng'); // Default name
   const navigate = useNavigate();
 
+  // Retrieve user data for display
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setUserName(parsedUser.userName || parsedUser.name || 'Người dùng'); // Use userName or name, fallback to default
+    }
+  }, []);
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError(null);
-  setSuccessMessage(null);
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccessMessage(null);
 
-  try {
-    const userId = 'userId1';
-    if (!userId) {
-      throw new Error('User not logged in. Please log in to create a roadmap.');
+    try {
+      const userId = getUserId();
+      if (!userId) {
+        throw new Error('User not logged in. Please log in to create a roadmap.');
+      }
+
+      const data = await createRoadMap({ topic, userId, level, duration });
+      console.log('Full roadmap data:', JSON.stringify(data, null, 2));
+      setSuccessMessage('Roadmap created successfully!');
+
+      const roadmapId = data.roadmap?.id;
+      if (!roadmapId) {
+        throw new Error('Không tìm thấy ID lộ trình từ phản hồi API. Dữ liệu trả về: ' + JSON.stringify(data));
+      }
+
+      navigate(`/detail/${roadmapId}`, { state: data.roadmap }); 
+    } catch (err) {
+      setError(err.message || 'Failed to create roadmap');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const data = await createRoadMap({ topic, userId, level, duration });
-    console.log('Full roadmap data:', JSON.stringify(data, null, 2));
-    setSuccessMessage('Roadmap created successfully!');
-
-    const roadmapId = data.roadmap?.id;
-    if (!roadmapId) {
-      throw new Error('Không tìm thấy ID lộ trình từ phản hồi API. Dữ liệu trả về: ' + JSON.stringify(data));
-    }
-
-    navigate(`/detail/${roadmapId}`, { state: data.roadmap }); 
-  } catch (err) {
-    setError(err.message || 'Failed to create roadmap');
-  } finally {
-    setLoading(false);
-  }
-};
   return (
     <div className="container">
       {/* Sidebar */}
@@ -52,7 +65,7 @@ export default function Home() {
           <span>LearnEasy</span>
         </div>
 
-         <nav className="sidebar-nav">
+        <nav className="sidebar-nav">
           <a href="/" className="nav-item active">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -124,9 +137,9 @@ export default function Home() {
         </nav>
 
         <div className="user-profile">
-          <div className="avatar">NT</div>
+          <div className="avatar">{userName.charAt(0)}</div>
           <div className="user-info">
-            <div className="user-name">Người dùng</div>
+            <div className="user-name">{userName}</div>
             <div className="user-rank">Rank: Beginner</div>
           </div>
         </div>
