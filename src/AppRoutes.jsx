@@ -4,6 +4,8 @@ import Home from './pages/HomePage';
 import Detail from './pages/DetailRoadmapPage';
 import TopicList from './pages/TopicListPage';
 import Login from './pages/LoginPage';
+import Public from './pages/publicTopicPage';
+import Rank from './pages/RankingPage';
 
 
 export default function AppRoutes() {
@@ -13,6 +15,8 @@ export default function AppRoutes() {
       <Route path="/detail/:id" element={<Detail />} />
       <Route path="/list" element={<TopicList />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/community" element={<Public />} />
+      <Route path="/rank" element={<Rank />} />
     </Routes>
   );
 }
