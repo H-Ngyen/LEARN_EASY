@@ -17,7 +17,7 @@ export default function TopicListPage() {
   const [error, setError] = useState(null);
   const [userName, setUserName] = useState('Người dùng'); // Default name
 
-  // Retrieve user data for display
+  // Retrieve user data for display and fetch roadmaps
   useEffect(() => {
     const fetchRoadmaps = async () => {
       try {
@@ -31,7 +31,7 @@ export default function TopicListPage() {
         const user = localStorage.getItem('user');
         if (user) {
           const parsedUser = JSON.parse(user);
-          setUserName(parsedUser.userName || parsedUser.name || 'Người dùng');
+          setUserName(parsedUser.name || parsedUser.userName || 'Người dùng');
         }
       } catch (err) {
         setError(err.message);
@@ -126,7 +126,6 @@ export default function TopicListPage() {
           <div className="avatar">{userName.charAt(0)}</div>
           <div className="user-info">
             <div className="user-name">{userName}</div>
-            <div className="user-rank">Rank: Beginner</div>
           </div>
         </div>
       </aside>

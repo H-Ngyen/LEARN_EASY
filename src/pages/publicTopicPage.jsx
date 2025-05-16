@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/publicTopic.css';
 import logo from '../assets/logo.png';
-import UserAPI from '../api/UserAPI';
 import RoadMapApi from '../api/RoadMapApi';
 import MyRoadmapApi from '../api/MyRoadmapApi';
 
@@ -13,6 +12,7 @@ export default function PublicTopicPage() {
   const [popular, setPopular] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userName, setUserName] = useState('Người dùng'); // Default name
   const navigate = useNavigate();
 
   // Lấy thông tin user từ localStorage và hiển thị
@@ -20,10 +20,7 @@ export default function PublicTopicPage() {
     const user = localStorage.getItem('user');
     if (user) {
       const parsedUser = JSON.parse(user);
-      const userName = parsedUser.name || parsedUser.userName || 'Người dùng';
-      const avatarInitial = userName.charAt(0).toUpperCase();
-      document.querySelector('.avatar').textContent = avatarInitial;
-      document.querySelector('.user-name').textContent = userName;
+      setUserName(parsedUser.name || parsedUser.userName || 'Người dùng'); // Use name or userName, fallback to default
     }
   }, []);
 
@@ -53,7 +50,7 @@ export default function PublicTopicPage() {
         }));
 
         setPopular(formattedRoadmaps);
-      } catch (error) {
+      } catch {
         setError('Không thể tải lộ trình cộng đồng. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
@@ -65,8 +62,6 @@ export default function PublicTopicPage() {
 
   const handleViewRoadmap = async (roadmapId) => {
     try {
-      // console.log('roadmapId: ', roadmapId);
-      // 
       // Lấy userId từ localStorage
       const user = localStorage.getItem('user');
       if (!user) {
@@ -80,7 +75,7 @@ export default function PublicTopicPage() {
         setError('Không tìm thấy userId. Vui lòng đăng nhập lại.');
         return;
       }
-      
+
       // Gọi API để sao chép roadmap
       const response = await SaveRoadmapFromCommunityApi({ id: roadmapId, userId });
       if (!response.success) {
@@ -89,7 +84,7 @@ export default function PublicTopicPage() {
 
       const newRoadmapId = response.roadmap.id;
       // Chuyển hướng đến trang chi tiết của roadmap mới
-      // navigate(`/detail/${newRoadmapId}`);
+      navigate(`/detail/${newRoadmapId}`);
     } catch (error) {
       setError(`Lỗi khi sao chép lộ trình: ${error.message}`);
     }
@@ -196,10 +191,9 @@ export default function PublicTopicPage() {
         </nav>
 
         <div className="user-profile">
-          <div className="avatar">NT</div>
+          <div className="avatar">{userName.charAt(0)}</div>
           <div className="user-info">
-            <div className="user-name">Người dùng</div>
-            <div className="user-rank">Rank: Beginner</div>
+            <div className="user-name">{userName}</div>
           </div>
         </div>
       </aside>
@@ -220,11 +214,7 @@ export default function PublicTopicPage() {
           <section className="roadmap-section popular">
             <div className="grid-cards">
               {popular.map((rm, idx) => (
-                <div
-                  key={idx}
-                  className="small-card"
-                  // onClick={() => navigate(`/detail/${rm.id}`)}
-                >
+                <div key={idx} className="small-card">
                   <div
                     className="card-cover"
                     style={{ backgroundImage: `url(${rm.coverUrl})` }}

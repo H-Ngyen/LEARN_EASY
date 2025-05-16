@@ -30,6 +30,16 @@ export default function DetailRoadmap() {
   const [loading, setLoading] = useState(!roadmap);
   const [error, setError] = useState(null);
   const [pendingChanges, setPendingChanges] = useState(false);
+  const [userName, setUserName] = useState('Người dùng'); // Default name
+
+  // Retrieve user data for display
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      setUserName(parsedUser.name || parsedUser.userName || 'Người dùng');
+    }
+  }, []);
 
   // Debounce timer for saving changes
   useEffect(() => {
@@ -319,10 +329,9 @@ export default function DetailRoadmap() {
           </a>
         </nav>
         <div className="user-profile">
-          <div className="avatar">NT</div>
+          <div className="avatar">{userName.charAt(0)}</div>
           <div className="user-info">
-            <div className="user-name">Người dùng</div>
-            <div className="user-rank">Rank: Beginner</div>
+            <div className="user-name">{userName}</div>
           </div>
         </div>
       </aside>

@@ -9,7 +9,7 @@ export default function RankingPage() {
   const [rankingData, setRankingData] = useState([]);
   const [userName, setUserName] = useState('Người dùng');
   const [avatarInitial, setAvatarInitial] = useState('NT');
-  const [userRank, setUserRank] = useState('Beginner');
+  const [userRank, setUserRank] = useState('Fresh');
 
   useEffect(() => {
     const userId = getUserId();
@@ -126,7 +126,6 @@ export default function RankingPage() {
           <div className="avatar">{avatarInitial}</div>
           <div className="user-info">
             <div className="user-name">{userName}</div>
-            <div className="user-rank">Rank: {userRank}</div>
           </div>
         </div>
       </aside>

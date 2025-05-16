@@ -140,7 +140,6 @@ export default function Home() {
           <div className="avatar">{userName.charAt(0)}</div>
           <div className="user-info">
             <div className="user-name">{userName}</div>
-            <div className="user-rank">Rank: Beginner</div>
           </div>
         </div>
       </aside>
