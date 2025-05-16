@@ -4,8 +4,10 @@ import '../css/publicTopic.css';
 import logo from '../assets/logo.png';
 import UserAPI from '../api/UserAPI';
 import RoadMapApi from '../api/RoadMapApi';
+import MyRoadmapApi from '../api/MyRoadmapApi';
 
 const { getRoadmapCommunity } = RoadMapApi();
+const { SaveRoadmapFromCommunityApi } = MyRoadmapApi();
 
 export default function PublicTopicPage() {
   const [popular, setPopular] = useState([]);
@@ -60,6 +62,38 @@ export default function PublicTopicPage() {
 
     fetchCommunityRoadmaps();
   }, []);
+
+  const handleViewRoadmap = async (roadmapId) => {
+    try {
+      // console.log('roadmapId: ', roadmapId);
+      // 
+      // Lấy userId từ localStorage
+      const user = localStorage.getItem('user');
+      if (!user) {
+        setError('Vui lòng đăng nhập để sao chép lộ trình.');
+        return;
+      }
+
+      const parsedUser = JSON.parse(user);
+      const userId = parsedUser.userId;
+      if (!userId) {
+        setError('Không tìm thấy userId. Vui lòng đăng nhập lại.');
+        return;
+      }
+      
+      // Gọi API để sao chép roadmap
+      const response = await SaveRoadmapFromCommunityApi({ id: roadmapId, userId });
+      if (!response.success) {
+        throw new Error(response.error || 'Không thể sao chép lộ trình.');
+      }
+
+      const newRoadmapId = response.roadmap.id;
+      // Chuyển hướng đến trang chi tiết của roadmap mới
+      // navigate(`/detail/${newRoadmapId}`);
+    } catch (error) {
+      setError(`Lỗi khi sao chép lộ trình: ${error.message}`);
+    }
+  };
 
   // Hàm ánh xạ duration từ API sang label
   const mapDuration = (duration) => {
@@ -189,7 +223,7 @@ export default function PublicTopicPage() {
                 <div
                   key={idx}
                   className="small-card"
-                  onClick={() => navigate(`/detail/${rm.id}`)}
+                  // onClick={() => navigate(`/detail/${rm.id}`)}
                 >
                   <div
                     className="card-cover"
@@ -208,7 +242,12 @@ export default function PublicTopicPage() {
                         <p className="name">{rm.author.name}</p>
                       </div>
                     </div>
-                    <button className="btn-view small">Xem lộ trình</button>
+                    <button
+                      className="btn-view small"
+                      onClick={() => handleViewRoadmap(rm.id)}
+                    >
+                      Xem lộ trình
+                    </button>
                   </div>
                 </div>
               ))}
