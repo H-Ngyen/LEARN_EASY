@@ -51,9 +51,10 @@ export default function DetailRoadmap() {
             source: edge.source,
             target: edge.target,
           })),
+          share: Number(roadmap.share), // Ép kiểu share thành số
         };
 
-        // Cập nhật lên server
+        console.log('Sending updated roadmap to server:', updatedRoadmap); // Log để kiểm tra
         await updateRoadmap(roadmap.id, updatedRoadmap);
 
         // Fetch lại dữ liệu từ server để đồng bộ
@@ -64,7 +65,7 @@ export default function DetailRoadmap() {
         console.error('Failed to save or refresh roadmap changes:', err);
         setError('Failed to save or refresh changes: ' + err.message);
       }
-    }, 0); 
+    }, 0);
 
     return () => clearTimeout(timer);
   }, [pendingChanges, nodes, edges, roadmap, updateRoadmap, id, getRoadmapById]);
@@ -130,6 +131,16 @@ export default function DetailRoadmap() {
     [selected]
   );
 
+  // Xử lý khi bấm "Chia sẻ"
+  const handleShare = useCallback(() => {
+    const newShareValue = Number(roadmap.share) === 0 ? 1 : 0; // Ép kiểu và đổi giá trị
+    setRoadmap((prev) => ({
+      ...prev,
+      share: newShareValue,
+    }));
+    setPendingChanges(true); // Kích hoạt lưu thay đổi
+  }, [roadmap]);
+
   const progress = useMemo(() => {
     const total = nodes.length;
     if (total === 0) return 0;
@@ -138,7 +149,7 @@ export default function DetailRoadmap() {
   }, [nodes]);
 
   const styledNodes = useMemo(() => {
-    console.log('Styling nodes with data:', nodes); // Log để kiểm tra dữ liệu nodes
+    console.log('Styling nodes with data:', nodes);
     return nodes.map((node) => {
       let background = 'var(--gray-100)';
       let color = 'var(--gray-500)';
@@ -179,8 +190,8 @@ export default function DetailRoadmap() {
 
       if (roadmap.nodes && roadmap.edges) {
         const newNodes = roadmap.nodes.map((n) => {
-          const status = Number(n.data?.status ?? 0); // Đảm bảo status là số
-          console.log(`Mapping node ${n.idNote} with status ${status}`); // Log để kiểm tra status
+          const status = Number(n.data?.status ?? 0);
+          console.log(`Mapping node ${n.idNote} with status ${status}`);
           return {
             id: n.idNote || n.id,
             data: {
@@ -333,22 +344,55 @@ export default function DetailRoadmap() {
           </button>
           <h1 className="page-title">{roadmapTopic}</h1>
           <div className="header-actions">
-            <button className="btn btn-primary">
-              <svg
-                width={18}
-                height={18}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-              Chia sẻ
-            </button>
+            {Number(roadmap.share) === 1 ? (
+              <div className="share-box" style={{ backgroundColor: 'var(--danger)', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center' }}>
+                <button
+                  onClick={handleShare}
+                  style={{
+                    marginLeft: '0.5rem',
+                    background: 'none',
+                    border: 'none',
+                    color: 'white',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <svg
+                    width={18}
+                    height={18}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ marginRight: '0.25rem' }}
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                  <span>Dừng chia sẻ</span>
+                </button>
+              </div>
+            ) : (
+              <button className="btn btn-primary" onClick={handleShare}>
+                <svg
+                  width={18}
+                  height={18}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                Chia sẻ
+              </button>
+            )}
           </div>
         </header>
 
