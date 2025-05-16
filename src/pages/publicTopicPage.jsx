@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../css/publicTopic.css';
 import logo from '../assets/logo.png';
+import UserAPI from '../api/UserAPI';
 
 // Dummy data for community roadmap, updated to match API response
 const dummyRoadmap = {
@@ -11,18 +12,26 @@ const dummyRoadmap = {
   duration: '1 tháng', // Ánh xạ duration: "0" từ API
   levelLabel: 'Mới bắt đầu', // Ánh xạ level: "0" từ API
   author: {
-    name: 'Trần Hưng'  },
+    name: 'Trần Hưng'
+  },
 };
 
 export default function PublicTopicPage() {
-  const [featured, setFeatured] = useState(null);
   const [popular, setPopular] = useState([]);
   const navigate = useNavigate();
 
+  // Retrieve user data for display
   useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      const userName = parsedUser.userName || parsedUser.name || 'Người dùng';
+      const avatarInitial = userName.charAt(0).toUpperCase();
+      document.querySelector('.avatar').textContent = avatarInitial;
+      document.querySelector('.user-name').textContent = userName;
+    }
+
     // Simulate fetching data
-    setFeatured(dummyRoadmap);
-    // For popular, you can list multiple dummy entries or reuse dummyRoadmap
     setPopular([dummyRoadmap, dummyRoadmap]);
   }, []);
 
@@ -35,7 +44,7 @@ export default function PublicTopicPage() {
           <span>LearnEasy</span>
         </div>
 
-         <nav className="sidebar-nav">
+        <nav className="sidebar-nav">
           <a href="/" className="nav-item">
             <svg
               xmlns="http://www.w3.org/2000/svg"

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -9,6 +9,7 @@ import ReactFlow, {
 } from 'react-flow-renderer';
 import '../css/detailroadmap.css';
 import logo from '../assets/logo.png';
+import RoadMapApi from '../api/RoadMapApi';
 
 // Các hằng số cho trình độ và thời gian
 const LEVELS = ['Mới bắt đầu', 'Trung cấp', 'Nâng cao'];
@@ -17,15 +18,33 @@ const DURATIONS = ['1 tháng', '3 tháng', '6 tháng'];
 export default function DetailRoadmap() {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  // Xử lý dữ liệu lộ trình từ state
-  // Giải nén roadmap từ bên trong đối tượng nếu cần thiết
-  const roadmapData = location.state?.roadmap || location.state || null;
+  const { id } = useParams();
+  const { getRoadmapById } = RoadMapApi();
 
-  // Khai báo tất cả hooks ở cấp độ cao nhất
+  const [roadmap, setRoadmap] = useState(location.state?.roadmap || location.state || null);
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [selected, setSelected] = useState(null);
+  const [loading, setLoading] = useState(!roadmap);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!roadmap && id) {
+      const fetchRoadmap = async () => {
+        try {
+          const data = await getRoadmapById(id);
+          setRoadmap(data);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchRoadmap();
+    } else {
+      setLoading(false);
+    }
+  }, [id, roadmap, getRoadmapById]);
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -97,12 +116,12 @@ export default function DetailRoadmap() {
   }, [edges, nodes]);
 
   useEffect(() => {
-    if (roadmapData) {
-      console.log('Received roadmap data:', roadmapData);
+    if (roadmap) {
+      console.log('Received roadmap data:', roadmap);
 
-      if (roadmapData.nodes && roadmapData.edges) {
+      if (roadmap.nodes && roadmap.edges) {
         setNodes(
-          roadmapData.nodes.map((n) => ({
+          roadmap.nodes.map((n) => ({
             id: n.idNote || n.id,
             data: {
               label: n.data?.label || n.title || 'Nội dung',
@@ -114,92 +133,35 @@ export default function DetailRoadmap() {
           }))
         );
         setEdges(
-          roadmapData.edges.map((e) => ({
+          roadmap.edges.map((e) => ({
             id: e.idEdge || e.id || `e-${e.source}-${e.target}`,
             source: e.source,
             target: e.target,
             animated: true,
           }))
         );
-      } else if (roadmapData.content) {
-        try {
-          let content = [];
-          if (typeof roadmapData.content === 'string') {
-            try {
-              content = JSON.parse(roadmapData.content);
-            } catch {
-              content = roadmapData.content.split('\n').filter((item) => item.trim());
-            }
-          } else if (Array.isArray(roadmapData.content)) {
-            content = roadmapData.content;
-          }
-          if (content.length > 0) {
-            const newNodes = content.map((item, index) => {
-              const title = typeof item === 'string' ? item : item.title || `Bước ${index + 1}`;
-              const description = typeof item === 'object' ? item.description || '' : '';
-              return {
-                id: `node-${index}`,
-                data: { label: title, description, status: 0 },
-                position: { x: 100, y: 100 + index * 100 },
-              };
-            });
-            const newEdges = [];
-            for (let i = 0; i < newNodes.length - 1; i++) {
-              newEdges.push({
-                id: `edge-${i}`,
-                source: newNodes[i].id,
-                target: newNodes[i + 1].id,
-                animated: true,
-              });
-            }
-            setNodes(newNodes);
-            setEdges(newEdges);
-          }
-        } catch (error) {
-          console.error('Error parsing roadmap content:', error);
-        }
       }
     }
-  }, [roadmapData]);
+  }, [roadmap]);
 
-  // Logic điều kiện sau khi khai báo tất cả hooks
-  if (!roadmapData) {
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error || !roadmap) {
     return (
       <div className="container">
-        <p style={{ color: 'red' }}>Lỗi: Không tìm thấy dữ liệu lộ trình. Vui lòng quay lại trang chủ.</p>
+        <p style={{ color: 'red' }}>Lỗi: {error || 'Không tìm thấy dữ liệu lộ trình.'} Vui lòng quay lại trang chủ.</p>
         <button onClick={() => navigate('/')}>Quay lại</button>
       </div>
     );
   }
 
-  // Xử lý các thuộc tính để hiển thị
-  const roadmapTopic = roadmapData?.topic || 'Lộ trình học tập';
-  
-  // Xử lý level - chuyển từ chuỗi sang số nếu cần
-  let levelIndex = 0;
-  if (roadmapData.level !== undefined) {
-    // Kiểm tra xem level có phải là số dưới dạng chuỗi không
-    const levelValue = parseInt(roadmapData.level, 10);
-    if (!isNaN(levelValue) && levelValue >= 0 && levelValue < LEVELS.length) {
-      levelIndex = levelValue;
-    }
-  }
-  const roadmapLevel = LEVELS[levelIndex];
-  
-  // Xử lý duration - chuyển từ chuỗi sang số nếu cần
-  let durationIndex = 0;
-  if (roadmapData.duration !== undefined) {
-    // Kiểm tra xem duration có phải là số dưới dạng chuỗi không
-    const durationValue = parseInt(roadmapData.duration, 10);
-    if (!isNaN(durationValue) && durationValue >= 0 && durationValue < DURATIONS.length) {
-      durationIndex = durationValue;
-    }
-  }
-  const roadmapDuration = DURATIONS[durationIndex];
-  
-  const roadmapCreated = roadmapData?.created || new Date().toLocaleDateString();
+  const roadmapTopic = roadmap?.topic || 'Lộ trình học tập';
+  const roadmapLevel = LEVELS[parseInt(roadmap.level)] || LEVELS[0];
+  const roadmapDuration = DURATIONS[parseInt(roadmap.duration)] || DURATIONS[0];
+  const roadmapCreated = roadmap?.createdAt ? new Date(roadmap.createdAt).toLocaleDateString() : roadmap.created;
 
-  // JSX render chính
   return (
     <div className="container">
       {/* Sidebar */}
@@ -208,7 +170,7 @@ export default function DetailRoadmap() {
           <img src={logo} alt="LearnEasy Logo" width="24" height="24" />
           <span>LearnEasy</span>
         </div>
-         <nav className="sidebar-nav">
+        <nav className="sidebar-nav">
           <a href="/" className="nav-item">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -341,19 +303,18 @@ export default function DetailRoadmap() {
               <span className="meta-value">{roadmapCreated}</span>
             </div>
           </div>
-            <div className="progress-container">
-              <div className="progress-header">
-                <span className="progress-title">Tiến độ hoàn thành</span>
-                <span className="progress-percentage">{progress}%</span>
-              </div>
-              <div className="progress-bar">
-                <div
-                  className="progress-value"
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
+          <div className="progress-container">
+            <div className="progress-header">
+              <span className="progress-title">Tiến độ hoàn thành</span>
+              <span className="progress-percentage">{progress}%</span>
             </div>
-
+            <div className="progress-bar">
+              <div
+                className="progress-value"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
         </section>
 
         {/* Hiển thị sơ đồ lộ trình */}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import '../css/ranking.css';
 import logo from '../assets/logo.png';
+import UserAPI from '../api/UserAPI';
 
 // Dummy data for ranking
 const dummyRankingData = [
@@ -36,11 +37,28 @@ const dummyRankingData = [
   },
 ];
 
+const { getUserId } = UserAPI();
+
 export default function RankingPage() {
   const [rankingData, setRankingData] = useState([]);
+  const [userName, setUserName] = useState('Người dùng'); // Default name
+  const [avatarInitial, setAvatarInitial] = useState('NT'); // Default avatar initial
 
   useEffect(() => {
+    // Simulate fetching ranking data
     setRankingData(dummyRankingData);
+
+    // Retrieve user data for display
+    const userId = getUserId();
+    if (userId) {
+      const user = localStorage.getItem('user');
+      if (user) {
+        const parsedUser = JSON.parse(user);
+        const name = parsedUser.userName || parsedUser.name || 'Người dùng';
+        setUserName(name);
+        setAvatarInitial(name.charAt(0).toUpperCase());
+      }
+    }
   }, []);
 
   return (
@@ -124,9 +142,9 @@ export default function RankingPage() {
         </nav>
 
         <div className="user-profile">
-          <div className="avatar">NT</div>
+          <div className="avatar">{avatarInitial}</div>
           <div className="user-info">
-            <div className="user-name">Người dùng</div>
+            <div className="user-name">{userName}</div>
             <div className="user-rank">Rank: Beginner</div>
           </div>
         </div>
@@ -142,30 +160,34 @@ export default function RankingPage() {
           <div className="section-header">
             <h2>Top người dùng</h2>
           </div>
-          <table className="ranking-table">
-            <thead>
-              <tr>
-                <th>Hạng</th>
-                <th>Tên</th>
-                <th>Cấp độ</th>
-                <th>Lộ trình hoàn thành</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rankingData.map((user) => (
-                <tr key={user.rank}>
-                  <td>{user.rank}</td>
-                  <td>{user.name}</td>
-                  <td>
-                    <span className={`rank-label ${user.memberRank.toLowerCase()}`}>
-                      {user.memberRank}
-                    </span>
-                  </td>
-                  <td>{user.finished}</td>
+          {rankingData.length > 0 ? (
+            <table className="ranking-table">
+              <thead>
+                <tr>
+                  <th>Hạng</th>
+                  <th>Tên</th>
+                  <th>Cấp độ</th>
+                  <th>Lộ trình hoàn thành</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rankingData.map((user) => (
+                  <tr key={user.rank}>
+                    <td>{user.rank}</td>
+                    <td>{user.name}</td>
+                    <td>
+                      <span className={`rank-label ${user.memberRank.toLowerCase()}`}>
+                        {user.memberRank}
+                      </span>
+                    </td>
+                    <td>{user.finished}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>Không có dữ liệu xếp hạng để hiển thị.</p>
+          )}
         </section>
       </main>
     </div>

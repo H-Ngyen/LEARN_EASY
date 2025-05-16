@@ -1,56 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../css/topiclist.css';
 import logo from '../assets/logo.png';
+import RoadMapApi from '../api/RoadMapApi';
+import UserAPI from '../api/UserAPI';
 
-// Dữ liệu roadmap inline
-const roadmap = {
-  id: 'roadmap1',
-  idUser: 'user123',
-  share: 1,
-  topic: 'Competitive Programming',
-  level: 1,
-  duration: 2,
-  created: '03/05/2025',
-  progress: 15,
-  nodes: [
-    { idNote: '1', data: { label: 'HTML & CSS', status: 2, description: 'HTML (Hypertext Markup Language) là ngôn ngữ đánh dấu tiêu chuẩn...' }, position: { x: 0, y: 0 } },
-    { idNote: '2', data: { label: 'JavaScript cơ bản', status: 2, description: 'JavaScript cơ bản cho phép bạn tương tác với trang web...' }, position: { x: 250, y: 0 } },
-    { idNote: '3', data: { label: 'ES6+', status: 2, description: 'ES6+ giới thiệu arrow functions, let/const, template literals...' }, position: { x: 500, y: 0 } },
-    { idNote: '4', data: { label: 'ReactJS', status: 2, description: 'ReactJS là thư viện JavaScript để xây dựng giao diện người dùng...' }, position: { x: 250, y: 150 } },
-    { idNote: '5', data: { label: 'State Management (Redux)', status: 1, description: 'Redux giúp quản lý state toàn cục trong ứng dụng React...' }, position: { x: 500, y: 150 } },
-    { idNote: '6', data: { label: 'Node.js & Express', status: 0, description: 'Node.js & Express cho phép xây dựng backend bằng JavaScript...' }, position: { x: 250, y: 300 } },
-    { idNote: '7', data: { label: 'Database (MongoDB)', status: 0, description: 'MongoDB là NoSQL database lưu trữ tài liệu JSON...' }, position: { x: 500, y: 300 } },
-    { idNote: '8', data: { label: 'Deployment & DevOps', status: 0, description: 'CICD, Docker, Kubernetes để triển khai và vận hành...' }, position: { x: 375, y: 450 } },
-  ],
-  edges: [
-    { idEdge: 'e1-2', source: '1', target: '2' },
-    { idEdge: 'e2-3', source: '2', target: '3' },
-    { idEdge: 'e3-4', source: '3', target: '4' },
-    { idEdge: 'e4-5', source: '4', target: '5' },
-    { idEdge: 'e4-6', source: '4', target: '6' },
-    { idEdge: 'e6-7', source: '6', target: '7' },
-    { idEdge: 'e5-8', source: '5', target: '8' },
-    { idEdge: 'e7-8', source: '7', target: '8' },
-  ],
-};
-
-// mapping cho level và duration
+// Mapping cho level và duration
 const LEVELS = ['Mới bắt đầu', 'Trung cấp', 'Nâng cao'];
 const DURATIONS = ['1 Tháng', '3 Tháng', '6 Tháng'];
 
+const { getRoadmapsByUser } = RoadMapApi();
+const { getUserId } = UserAPI();
+
 export default function TopicListPage() {
-  const r = roadmap;
-  const display = {
-    id: r.id,
-    title: r.topic,
-    duration: DURATIONS[r.duration],
-    progress: r.progress / 100,
-    tags: [LEVELS[r.level]],
-    topics: r.nodes.length,
-    created: r.created,
-    share: r.share,
-  };
+  const [roadmaps, setRoadmaps] = useState([]);
+  const [error, setError] = useState(null);
+  const [userName, setUserName] = useState('Người dùng'); // Default name
+
+  // Retrieve user data for display
+  useEffect(() => {
+    const fetchRoadmaps = async () => {
+      try {
+        const userId = getUserId();
+        if (!userId) {
+          throw new Error('User not logged in');
+        }
+        const data = await getRoadmapsByUser(userId);
+        setRoadmaps(data);
+
+        const user = localStorage.getItem('user');
+        if (user) {
+          const parsedUser = JSON.parse(user);
+          setUserName(parsedUser.userName || parsedUser.name || 'Người dùng');
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    fetchRoadmaps();
+  }, []); // Empty dependency array since getRoadmapsByUser and getUserId are stable
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <div className="container">
@@ -60,8 +52,7 @@ export default function TopicListPage() {
           <img src={logo} alt="LearnEasy Logo" width="24" height="24" />
           <span>LearnEasy</span>
         </div>
-
- <nav className="sidebar-nav">
+        <nav className="sidebar-nav">
           <a href="/" className="nav-item">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -131,11 +122,10 @@ export default function TopicListPage() {
             <span>Bảng xếp hạng</span>
           </a>
         </nav>
-
         <div className="user-profile">
-          <div className="avatar">NT</div>
+          <div className="avatar">{userName.charAt(0)}</div>
           <div className="user-info">
-            <div className="user-name">Người dùng</div>
+            <div className="user-name">{userName}</div>
             <div className="user-rank">Rank: Beginner</div>
           </div>
         </div>
@@ -151,40 +141,54 @@ export default function TopicListPage() {
         </div>
 
         <div className="roadmap-list">
-          <div className="roadmap-card">
-            <div className="roadmap-header">
-              <h2 className="roadmap-title">{display.title}</h2>
-              <div className="meta">
-                <span className="roadmap-duration">📅 {display.duration}</span>
-                <span className={display.share ? 'share-public' : 'share-private'}>
-                  {display.share ? '🌐 Đã chia sẻ' : '🔒 Riêng tư'}
-                </span>
+          {roadmaps.map((r) => {
+            const display = {
+              id: r.id,
+              title: r.topic,
+              duration: DURATIONS[r.duration] || 'Không xác định',
+              progress: (r.nodes.filter(n => n.data.status === '2').length / r.nodes.length) * 100 || 0,
+              tags: [LEVELS[r.level] || 'Không xác định'],
+              topics: r.nodes.length,
+              created: new Date(r.createdAt).toLocaleDateString(),
+              share: r.share === '1' ? '🌐 Đã chia sẻ' : '🔒 Riêng tư',
+            };
+            return (
+              <div key={r.id} className="roadmap-card">
+                <div className="roadmap-header">
+                  <h2 className="roadmap-title">{display.title}</h2>
+                  <div className="meta">
+                    <span className="roadmap-duration">📅 {display.duration}</span>
+                    <span className={r.share === '1' ? 'share-public' : 'share-private'}>
+                      {display.share}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="info-row">
+                  <span className="created-date">Tạo: {display.created}</span>
+                  <span className="topic-count">{display.topics} chủ đề</span>
+                </div>
+
+                <div className="progress-section">
+                  <div className="progress-label">Tiến độ</div>
+                  <div className="progress-bar-container">
+                    <div className="progress-bar" style={{ width: `${display.progress}%` }} />
+                  </div>
+                  <div className="progress-percent">{Math.round(display.progress)}%</div>
+                </div>
+
+                <div className="tags">
+                  {display.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
+                </div>
+
+                <div className="card-footer">
+                  <Link to={`/detail/${r.id}`} className="btn continue-button">
+                    Tiếp tục
+                  </Link>
+                </div>
               </div>
-            </div>
-
-            <div className="info-row">
-              <span className="created-date">Tạo: {display.created}</span>
-              <span className="topic-count">{display.topics} chủ đề</span>
-            </div>
-
-            <div className="progress-section">
-              <div className="progress-label">Tiến độ</div>
-              <div className="progress-bar-container">
-                <div className="progress-bar" style={{ width: `${display.progress * 100}%` }} />
-              </div>
-              <div className="progress-percent">{Math.round(display.progress * 100)}%</div>
-            </div>
-
-            <div className="tags">
-              {display.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
-            </div>
-
-            <div className="card-footer">
-              <Link to={`/detail/`} className="btn continue-button">
-                Tiếp tục
-              </Link>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </main>
     </div>
