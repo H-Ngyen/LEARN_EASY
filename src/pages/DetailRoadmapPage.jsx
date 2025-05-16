@@ -414,14 +414,12 @@ export default function DetailRoadmap() {
               <span className="meta-value">{roadmapCreated}</span>
             </div>
           </div>
-          <div className="progress-container">
-            <div className="progress-header">
-              <span className="progress-title">Tiến độ hoàn thành</span>
-              <span className="progress-percentage">{progress}%</span>
+          <div className="progress-section">
+            <div className="progress-label">Tiến độ</div>
+            <div className="progress-bar-container">
+              <div className="progress-bar" style={{ width: `${progress}%` }} />
             </div>
-            <div className="progress-bar">
-              <div className="progress-value" style={{ width: `${progress}%` }}></div>
-            </div>
+            <div className="progress-percent">{Math.round(progress)}%</div>
           </div>
         </section>
 

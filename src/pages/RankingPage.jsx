@@ -3,52 +3,15 @@ import '../css/ranking.css';
 import logo from '../assets/logo.png';
 import UserAPI from '../api/UserAPI';
 
-// Dummy data for ranking
-const dummyRankingData = [
-  {
-    rank: 1,
-    name: 'Trần Hưng',
-    finished: 1250,
-    memberRank: 'Advanced',
-  },
-  {
-    rank: 2,
-    name: 'Nguyễn Anh',
-    finished: 1100,
-    memberRank: 'Intermediate',
-  },
-  {
-    rank: 3,
-    name: 'Lê Minh',
-    finished: 950,
-    memberRank: 'Intermediate',
-  },
-  {
-    rank: 4,
-    name: 'Phạm Ngọc',
-    finished: 800,
-    memberRank: 'Beginner',
-  },
-  {
-    rank: 5,
-    name: 'Đỗ Thịnh',
-    finished: 650,
-    memberRank: 'Beginner',
-  },
-];
-
 const { getUserId } = UserAPI();
 
 export default function RankingPage() {
   const [rankingData, setRankingData] = useState([]);
-  const [userName, setUserName] = useState('Người dùng'); // Default name
-  const [avatarInitial, setAvatarInitial] = useState('NT'); // Default avatar initial
+  const [userName, setUserName] = useState('Người dùng');
+  const [avatarInitial, setAvatarInitial] = useState('NT');
+  const [userRank, setUserRank] = useState('Beginner');
 
   useEffect(() => {
-    // Simulate fetching ranking data
-    setRankingData(dummyRankingData);
-
-    // Retrieve user data for display
     const userId = getUserId();
     if (userId) {
       const user = localStorage.getItem('user');
@@ -59,6 +22,24 @@ export default function RankingPage() {
         setAvatarInitial(name.charAt(0).toUpperCase());
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const fetchRanking = async () => {
+      try {
+        const ranking = await UserAPI().getRanking();
+        setRankingData(ranking);
+
+        const currentUserId = getUserId();
+        const currentUser = ranking.find(user => user.userId === currentUserId);
+        if (currentUser) {
+          setUserRank(currentUser.memberRank);
+        }
+      } catch (error) {
+        console.error('Error fetching ranking:', error);
+      }
+    };
+    fetchRanking();
   }, []);
 
   return (
@@ -145,7 +126,7 @@ export default function RankingPage() {
           <div className="avatar">{avatarInitial}</div>
           <div className="user-info">
             <div className="user-name">{userName}</div>
-            <div className="user-rank">Rank: Beginner</div>
+            <div className="user-rank">Rank: {userRank}</div>
           </div>
         </div>
       </aside>
@@ -155,7 +136,6 @@ export default function RankingPage() {
           <h1>Bảng xếp hạng</h1>
         </div>
 
-        {/* Ranking Table */}
         <section className="ranking-section">
           <div className="section-header">
             <h2>Top người dùng</h2>
@@ -167,7 +147,7 @@ export default function RankingPage() {
                   <th>Hạng</th>
                   <th>Tên</th>
                   <th>Cấp độ</th>
-                  <th>Lộ trình hoàn thành</th>
+                  <th>Điểm số</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,7 +160,7 @@ export default function RankingPage() {
                         {user.memberRank}
                       </span>
                     </td>
-                    <td>{user.finished}</td>
+                    <td>{user.totalScore}</td>
                   </tr>
                 ))}
               </tbody>

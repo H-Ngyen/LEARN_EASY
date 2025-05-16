@@ -38,6 +38,10 @@ body {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
+  height: 100vh; /* Chiếm toàn bộ chiều cao viewport */
+  overflow-y: auto; /* Cho phép cuộn nếu nội dung vượt quá */
+  position: sticky; /* Giữ sidebar cố định trong viewport */
+  top: 0; /* Đính ở đầu viewport */
 }
 
 .logo {
@@ -110,6 +114,7 @@ body {
 /* Nội dung chính */
 .main {
   padding: 2rem;
+  overflow-y: auto; /* Cho phép cuộn nội dung chính độc lập */
 }
 
 .page-header {
@@ -194,40 +199,35 @@ body {
   font-size: 1.125rem;
 }
 
-.progress-container {
-  margin-top: 1.5rem;
-}
-
-.progress-header {
+.progress-section {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.progress-title {
-  font-weight: 500;
+.progress-label {
   font-size: 0.875rem;
+  color: var(--gray-500);
+  width: 4rem;
 }
 
-.progress-percentage {
-  font-weight: 600;
-  color: var(--primary);
+.progress-bar-container {
+  flex: 1;
+  height: 0.5rem;
+  background-color: var(--gray-300);
+  border-radius: 0.25rem;
+  overflow: hidden;
 }
 
 .progress-bar {
-  width: 100%;
-  height: 1rem;
-  background-color: var(--gray-200);
-  border-radius: 9999px;
-  overflow: hidden;
-  border: 1px solid var(--gray-300);
-}
-
-.progress-value {
-  min-width: 2px;
   height: 100%;
   background-color: var(--primary);
-  border-radius: 9999px;
+}
+
+.progress-percent {
+  font-size: 0.875rem;
+  width: 2.5rem;
+  text-align: right;
 }
 
 /* Hiển thị sơ đồ */
