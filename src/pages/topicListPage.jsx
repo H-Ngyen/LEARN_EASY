@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../css/topiclist.css';
 import logo from '../assets/logo.png';
 import RoadMapApi from '../api/RoadMapApi';
@@ -25,6 +25,7 @@ export default function TopicListPage() {
   const [roadmaps, setRoadmaps] = useState([]);
   const [error, setError] = useState(null);
   const [userName, setUserName] = useState('Người dùng'); // Default name
+  const navigate = useNavigate();
 
   // Retrieve user data for display and fetch roadmaps
   useEffect(() => {
@@ -48,6 +49,12 @@ export default function TopicListPage() {
     };
     fetchRoadmaps();
   }, []); // Empty dependency array since getRoadmapsByUser and getUserId are stable
+
+  // Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    localStorage.removeItem('user'); // Xóa thông tin người dùng
+    navigate('/login'); // Chuyển hướng đến trang đăng nhập
+  };
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -135,6 +142,23 @@ export default function TopicListPage() {
           <div className="avatar">{userName.charAt(0)}</div>
           <div className="user-info">
             <div className="user-name">{userName}</div>
+            <button className="logout-button" onClick={handleLogout} title="Đăng xuất">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
           </div>
         </div>
       </aside>

@@ -23,9 +23,15 @@ export default function Home() {
     const user = localStorage.getItem('user');
     if (user) {
       const parsedUser = JSON.parse(user);
-      setUserName( parsedUser.name || parsedUser.userName || 'Người dùng'); // Use userName or name, fallback to default
+      setUserName(parsedUser.name || parsedUser.userName || 'Người dùng');
     }
   }, []);
+
+  // Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    localStorage.removeItem('user'); // Xóa thông tin người dùng
+    navigate('/login'); // Chuyển hướng đến trang đăng nhập
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,7 +54,7 @@ export default function Home() {
         throw new Error('Không tìm thấy ID lộ trình từ phản hồi API. Dữ liệu trả về: ' + JSON.stringify(data));
       }
 
-      navigate(`/detail/${roadmapId}`, { state: data.roadmap }); 
+      navigate(`/detail/${roadmapId}`, { state: data.roadmap });
     } catch (err) {
       setError(err.message || 'Failed to create roadmap');
     } finally {
@@ -140,6 +146,23 @@ export default function Home() {
           <div className="avatar">{userName.charAt(0)}</div>
           <div className="user-info">
             <div className="user-name">{userName}</div>
+            <button className="logout-button" onClick={handleLogout} title="Đăng xuất">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
           </div>
         </div>
       </aside>

@@ -325,3 +325,43 @@ body {
   border-radius: 0.25rem;
   font-size: 1.0625rem;
 }
+
+/* Style cho user-profile và user-info */
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Khoảng cách giữa user-name và logout button */
+}
+
+/* Style cho nút đăng xuất */
+.logout-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.logout-button:hover {
+  opacity: 0.7; /* Hiệu ứng hover */
+}
+
+.logout-button svg {
+  color: var(--text-secondary, #666); /* Màu icon, có thể tùy chỉnh */
+}
+
+/* Đảm bảo user-name không bị lệch */
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
