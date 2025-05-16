@@ -9,15 +9,9 @@ const dummyRoadmap = {
   coverUrl: 'https://via.placeholder.com/600x400?text=M%C3%AC+X%C3%A0o+B%C6%A1+T%E1%BB%8Fi', // Hình ảnh liên quan đến mì xào
   title: 'Hướng dẫn nấu món mì xào bơ tỏi',
   duration: '1 tháng', // Ánh xạ duration: "0" từ API
-  category: 'Ẩm thực',
-  description:
-    'Học cách nấu món mì xào bơ tỏi thơm ngon trong 1 tháng, từ kỹ năng an toàn nhà bếp, chuẩn bị nguyên liệu, đến tạo nước sốt bơ tỏi và xào mì hoàn hảo.',
-  tags: ['Ẩm thực', 'Nấu ăn', 'Mì xào'],
   levelLabel: 'Mới bắt đầu', // Ánh xạ level: "0" từ API
   author: {
-    name: 'Trần Hưng',
-    role: 'Đầu bếp chuyên nghiệp',
-  },
+    name: 'Trần Hưng'  },
 };
 
 export default function PublicTopicPage() {
@@ -31,8 +25,6 @@ export default function PublicTopicPage() {
     // For popular, you can list multiple dummy entries or reuse dummyRoadmap
     setPopular([dummyRoadmap, dummyRoadmap]);
   }, []);
-
-  const renderTags = (tags) => tags.map((t, i) => <span key={i} className="tag">{t}</span>);
 
   return (
     <div className="container">
@@ -127,53 +119,8 @@ export default function PublicTopicPage() {
         <div className="page-header">
           <h1>Lộ trình cộng đồng</h1>
         </div>
-
-        {/* Featured Roadmap */}
-        {featured && (
-          <section className="roadmap-section featured">
-            <div className="section-header">
-              <h2>Lộ trình nổi bật</h2>
-              <button className="link-btn" onClick={() => navigate('/community/all')}>
-                Xem tất cả
-              </button>
-            </div>
-            <div className="featured-card" onClick={() => navigate(`/detail/${featured.id}`)}>
-              <div
-                className="card-cover"
-                style={{ backgroundImage: `url(${featured.coverUrl})` }}
-              />
-              <div className="card-content">
-                <h3>{featured.title}</h3>
-                <div className="meta">
-                  <span>
-                    <i className="icon-calendar" /> {featured.duration}
-                  </span>
-                  <span className="label">{featured.category}</span>
-                </div>
-                <p className="description">{featured.description}</p>
-                <div className="tags">{renderTags(featured.tags)}</div>
-                <div className="author">
-                  <span className="label level">{featured.levelLabel}</span>
-                  <div>
-                    <p className="name">{featured.author.name}</p>
-                    <p className="role">{featured.author.role}</p>
-                  </div>
-                </div>
-                <button className="btn-view">Xem lộ trình</button>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Popular Roadmaps */}
         {popular.length > 0 && (
           <section className="roadmap-section popular">
-            <div className="section-header">
-              <h2>Lộ trình phổ biến</h2>
-              <button className="link-btn" onClick={() => navigate('/community/all')}>
-                Xem tất cả
-              </button>
-            </div>
             <div className="grid-cards">
               {popular.map((rm, idx) => (
                 <div
@@ -191,13 +138,11 @@ export default function PublicTopicPage() {
                       <span>
                         <i className="icon-calendar" /> {rm.duration}
                       </span>
-                      <span className="label">{rm.category}</span>
                     </div>
                     <div className="author">
                       <span className="label level">{rm.levelLabel}</span>
                       <div>
                         <p className="name">{rm.author.name}</p>
-                        <p className="role">{rm.author.role}</p>
                       </div>
                     </div>
                     <button className="btn-view small">Xem lộ trình</button>
