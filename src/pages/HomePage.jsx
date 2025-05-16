@@ -2,6 +2,7 @@ import '../css/home.css';
 import logo from '../assets/logo.png';
 import { useState } from 'react';
 import CreateRoadMapApi from '../api/RoadMapApi';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
   const [topic, setTopic] = useState('');
@@ -12,31 +13,36 @@ export default function Home() {
   const [successMessage, setSuccessMessage] = useState(null);
 
   const { createRoadMap } = CreateRoadMapApi();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccessMessage(null);
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
+  setSuccessMessage(null);
 
-    try {
-      // const userId = localStorage.getItem('userId');
-      const userId = 'userId1';
-      if (!userId) {
-        throw new Error('User not logged in. Please log in to create a roadmap.');
-      }
-
-      const data = await createRoadMap({ topic, userId, level, duration });
-      setSuccessMessage('Roadmap created successfully!');
-      console.log('Roadmap data:', data);
-
-    } catch (err) {
-      setError(err.message || 'Failed to create roadmap');
-    } finally {
-      setLoading(false);
+  try {
+    const userId = 'userId1';
+    if (!userId) {
+      throw new Error('User not logged in. Please log in to create a roadmap.');
     }
-  };
 
+    const data = await createRoadMap({ topic, userId, level, duration });
+    console.log('Full roadmap data:', JSON.stringify(data, null, 2));
+    setSuccessMessage('Roadmap created successfully!');
+
+    const roadmapId = data.roadmap?.id;
+    if (!roadmapId) {
+      throw new Error('Không tìm thấy ID lộ trình từ phản hồi API. Dữ liệu trả về: ' + JSON.stringify(data));
+    }
+
+    navigate(`/detail/${roadmapId}`, { state: data.roadmap }); 
+  } catch (err) {
+    setError(err.message || 'Failed to create roadmap');
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="container">
       {/* Sidebar */}
