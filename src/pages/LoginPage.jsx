@@ -1,15 +1,36 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../css/login.css';
+import UserAPI from '../api/UserAPI';
+
+const { loginUser } = UserAPI();
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState(''); // Can be email or username
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [error, setError] = useState('');
+  const [loginType, setLoginType] = useState('email'); // Default to email
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password, remember });
+    setError('');
+
+    try {
+      const response = await loginUser(identifier, password);
+      console.log('Login successful:', response);
+
+      if (remember) {
+        localStorage.setItem('user', JSON.stringify(response.user));
+      }
+
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Đăng nhập thất bại');
+      console.error('Login error:', err);
+    }
   };
 
   return (
@@ -17,14 +38,33 @@ const LoginPage = () => {
       <div className="login-left" />
       <div className="login-right">
         <h1 className="login-title">Đăng Nhập</h1>
+        {error && <p className="error-text" style={{ color: 'red' }}>{error}</p>}
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Email</label>
+            <label>Đăng nhập bằng</label>
+            <div>
+              <label>
+                <input
+                  type="radio"
+                  value="email"
+                  checked={loginType === 'email'}
+                  onChange={() => setLoginType('email')}
+                /> Email
+              </label>
+              <label style={{ marginLeft: '15px' }}>
+                <input
+                  type="radio"
+                  value="username"
+                  checked={loginType === 'username'}
+                  onChange={() => setLoginType('username')}
+                /> Tên người dùng
+              </label>
+            </div>
             <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              type={loginType === 'email' ? 'email' : 'text'}
+              value={identifier}
+              onChange={e => setIdentifier(e.target.value)}
+              placeholder={loginType === 'email' ? 'you@example.com' : 'Tên người dùng'}
               required
             />
           </div>
