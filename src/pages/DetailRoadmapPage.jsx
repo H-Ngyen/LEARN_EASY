@@ -19,7 +19,7 @@ export default function DetailRoadmap() {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { getRoadmapById } = RoadMapApi();
+  const { getRoadmapById, updateRoadmap } = RoadMapApi();
 
   const [roadmap, setRoadmap] = useState(location.state?.roadmap || location.state || null);
   const [nodes, setNodes] = useState([]);
@@ -27,6 +27,47 @@ export default function DetailRoadmap() {
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(!roadmap);
   const [error, setError] = useState(null);
+  const [pendingChanges, setPendingChanges] = useState(false);
+
+  // Debounce timer for saving changes
+  useEffect(() => {
+    if (!pendingChanges) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const updatedRoadmap = {
+          id: roadmap.id,
+          nodes: nodes.map((node) => ({
+            idNote: node.id,
+            data: {
+              label: node.data.label,
+              description: node.data.description,
+              status: node.data.status,
+            },
+            position: node.position,
+          })),
+          edges: edges.map((edge) => ({
+            idEdge: edge.id,
+            source: edge.source,
+            target: edge.target,
+          })),
+        };
+
+        // Cập nhật lên server
+        await updateRoadmap(roadmap.id, updatedRoadmap);
+
+        // Fetch lại dữ liệu từ server để đồng bộ
+        const refreshedData = await getRoadmapById(id);
+        setRoadmap(refreshedData);
+        setPendingChanges(false);
+      } catch (err) {
+        console.error('Failed to save or refresh roadmap changes:', err);
+        setError('Failed to save or refresh changes: ' + err.message);
+      }
+    }, 0); 
+
+    return () => clearTimeout(timer);
+  }, [pendingChanges, nodes, edges, roadmap, updateRoadmap, id, getRoadmapById]);
 
   useEffect(() => {
     if (!roadmap && id) {
@@ -47,12 +88,24 @@ export default function DetailRoadmap() {
   }, [id, roadmap, getRoadmapById]);
 
   const onNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    (changes) => {
+      setNodes((nds) => {
+        const updatedNodes = applyNodeChanges(changes, nds);
+        setPendingChanges(true);
+        return updatedNodes;
+      });
+    },
     []
   );
 
   const onEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    (changes) => {
+      setEdges((eds) => {
+        const updatedEdges = applyEdgeChanges(changes, eds);
+        setPendingChanges(true);
+        return updatedEdges;
+      });
+    },
     []
   );
 
@@ -63,11 +116,13 @@ export default function DetailRoadmap() {
   const handleStatusChange = useCallback(
     (e) => {
       const newStatus = parseInt(e.target.value, 10);
-      setNodes((nds) =>
-        nds.map((n) =>
+      setNodes((nds) => {
+        const updatedNodes = nds.map((n) =>
           n.id === selected?.id ? { ...n, data: { ...n.data, status: newStatus } } : n
-        )
-      );
+        );
+        setPendingChanges(true);
+        return updatedNodes;
+      });
       setSelected((sel) =>
         sel ? { ...sel, data: { ...sel.data, status: newStatus } } : null
       );
@@ -83,14 +138,17 @@ export default function DetailRoadmap() {
   }, [nodes]);
 
   const styledNodes = useMemo(() => {
+    console.log('Styling nodes with data:', nodes); // Log để kiểm tra dữ liệu nodes
     return nodes.map((node) => {
       let background = 'var(--gray-100)';
       let color = 'var(--gray-500)';
-      if (node.data.status === 1) {
+      if (node.data.status === 0) {
+        background = 'var(--gray-100)';
+        color = 'var(--gray-500)';
+      } else if (node.data.status === 1) {
         background = 'var(--warning)';
         color = 'black';
-      }
-      if (node.data.status === 2) {
+      } else if (node.data.status === 2) {
         background = 'var(--success)';
         color = 'black';
       }
@@ -120,26 +178,29 @@ export default function DetailRoadmap() {
       console.log('Received roadmap data:', roadmap);
 
       if (roadmap.nodes && roadmap.edges) {
-        setNodes(
-          roadmap.nodes.map((n) => ({
+        const newNodes = roadmap.nodes.map((n) => {
+          const status = Number(n.data?.status ?? 0); // Đảm bảo status là số
+          console.log(`Mapping node ${n.idNote} with status ${status}`); // Log để kiểm tra status
+          return {
             id: n.idNote || n.id,
             data: {
               label: n.data?.label || n.title || 'Nội dung',
               description: n.data?.description || n.content || 'Chi tiết nội dung',
-              status: n.data?.status || 0,
+              status: status,
             },
             position: n.position || { x: 0, y: 0 },
             draggable: true,
-          }))
-        );
-        setEdges(
-          roadmap.edges.map((e) => ({
-            id: e.idEdge || e.id || `e-${e.source}-${e.target}`,
-            source: e.source,
-            target: e.target,
-            animated: true,
-          }))
-        );
+          };
+        });
+        setNodes(newNodes);
+
+        const newEdges = roadmap.edges.map((e) => ({
+          id: e.idEdge || e.id || `e-${e.source}-${e.target}`,
+          source: e.source,
+          target: e.target,
+          animated: true,
+        }));
+        setEdges(newEdges);
       }
     }
   }, [roadmap]);
@@ -151,7 +212,9 @@ export default function DetailRoadmap() {
   if (error || !roadmap) {
     return (
       <div className="container">
-        <p style={{ color: 'red' }}>Lỗi: {error || 'Không tìm thấy dữ liệu lộ trình.'} Vui lòng quay lại trang chủ.</p>
+        <p style={{ color: 'red' }}>
+          Lỗi: {error || 'Không tìm thấy dữ liệu lộ trình.'} Vui lòng quay lại trang chủ.
+        </p>
         <button onClick={() => navigate('/')}>Quay lại</button>
       </div>
     );
@@ -160,7 +223,9 @@ export default function DetailRoadmap() {
   const roadmapTopic = roadmap?.topic || 'Lộ trình học tập';
   const roadmapLevel = LEVELS[parseInt(roadmap.level)] || LEVELS[0];
   const roadmapDuration = DURATIONS[parseInt(roadmap.duration)] || DURATIONS[0];
-  const roadmapCreated = roadmap?.createdAt ? new Date(roadmap.createdAt).toLocaleDateString() : roadmap.created;
+  const roadmapCreated = roadmap?.createdAt
+    ? new Date(roadmap.createdAt).toLocaleDateString()
+    : roadmap.created;
 
   return (
     <div className="container">
@@ -309,10 +374,7 @@ export default function DetailRoadmap() {
               <span className="progress-percentage">{progress}%</span>
             </div>
             <div className="progress-bar">
-              <div
-                className="progress-value"
-                style={{ width: `${progress}%` }}
-              ></div>
+              <div className="progress-value" style={{ width: `${progress}%` }}></div>
             </div>
           </div>
         </section>
@@ -366,8 +428,7 @@ export default function DetailRoadmap() {
                   </select>
                 </div>
                 <p>
-                  <strong>Mô tả:</strong>{' '}
-                  {selected.data.description || 'Không có mô tả'}
+                  <strong>Mô tả:</strong> {selected.data.description || 'Không có mô tả'}
                 </p>
               </div>
             </div>
