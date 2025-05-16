@@ -23,7 +23,7 @@ export default function Home() {
     const user = localStorage.getItem('user');
     if (user) {
       const parsedUser = JSON.parse(user);
-      setUserName(parsedUser.userName || parsedUser.name || 'Người dùng'); // Use userName or name, fallback to default
+      setUserName( parsedUser.name || parsedUser.userName || 'Người dùng'); // Use userName or name, fallback to default
     }
   }, []);
 

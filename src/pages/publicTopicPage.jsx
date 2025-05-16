@@ -3,37 +3,83 @@ import { useNavigate } from 'react-router-dom';
 import '../css/publicTopic.css';
 import logo from '../assets/logo.png';
 import UserAPI from '../api/UserAPI';
+import RoadMapApi from '../api/RoadMapApi';
 
-// Dummy data for community roadmap, updated to match API response
-const dummyRoadmap = {
-  id: 'roadmap1',
-  coverUrl: 'https://via.placeholder.com/600x400?text=M%C3%AC+X%C3%A0o+B%C6%A1+T%E1%BB%8Fi', // Hình ảnh liên quan đến mì xào
-  title: 'Hướng dẫn nấu món mì xào bơ tỏi',
-  duration: '1 tháng', // Ánh xạ duration: "0" từ API
-  levelLabel: 'Mới bắt đầu', // Ánh xạ level: "0" từ API
-  author: {
-    name: 'Trần Hưng'
-  },
-};
+const { getRoadmapCommunity } = RoadMapApi();
 
 export default function PublicTopicPage() {
   const [popular, setPopular] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Retrieve user data for display
+  // Lấy thông tin user từ localStorage và hiển thị
   useEffect(() => {
     const user = localStorage.getItem('user');
     if (user) {
       const parsedUser = JSON.parse(user);
-      const userName = parsedUser.userName || parsedUser.name || 'Người dùng';
+      const userName = parsedUser.name || parsedUser.userName || 'Người dùng';
       const avatarInitial = userName.charAt(0).toUpperCase();
       document.querySelector('.avatar').textContent = avatarInitial;
       document.querySelector('.user-name').textContent = userName;
     }
-
-    // Simulate fetching data
-    setPopular([dummyRoadmap, dummyRoadmap]);
   }, []);
+
+  // Fetch community roadmaps từ API
+  useEffect(() => {
+    const fetchCommunityRoadmaps = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getRoadmapCommunity();
+        console.log(data);
+
+        // Giả định API trả về data.roadmap là một mảng các roadmap
+        // Nếu API trả về data.roadmap là một object đơn, cần chuyển thành mảng
+        const roadmaps = Array.isArray(data) ? data : [data];
+
+        // Ánh xạ dữ liệu từ API để khớp với cấu trúc UI
+        const formattedRoadmaps = roadmaps.map((rm) => ({
+          id: rm.id,
+          coverUrl: rm.coverUrl || 'https://via.placeholder.com/600x400?text=Default+Image', // Fallback image nếu không có
+          title: rm.topic || rm.title || 'Untitled Roadmap',
+          duration: mapDuration(rm.duration), // Ánh xạ duration
+          levelLabel: mapLevel(rm.level), // Ánh xạ level
+          author: {
+            name: rm.author?.name || 'Unknown Author',
+          },
+        }));
+
+        setPopular(formattedRoadmaps);
+      } catch (error) {
+        setError('Không thể tải lộ trình cộng đồng. Vui lòng thử lại sau.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCommunityRoadmaps();
+  }, []);
+
+  // Hàm ánh xạ duration từ API sang label
+  const mapDuration = (duration) => {
+    const durationMap = {
+      '0': '1 tháng',
+      '1': '3 tháng',
+      '2': '6 tháng',
+    };
+    return durationMap[duration] || 'Không xác định';
+  };
+
+  // Hàm ánh xạ level từ API sang label
+  const mapLevel = (level) => {
+    const levelMap = {
+      '0': 'Mới bắt đầu',
+      '1': 'Trung cấp',
+      '2': 'Nâng cao',
+    };
+    return levelMap[level] || 'Không xác định';
+  };
 
   return (
     <div className="container">
@@ -128,7 +174,15 @@ export default function PublicTopicPage() {
         <div className="page-header">
           <h1>Lộ trình cộng đồng</h1>
         </div>
-        {popular.length > 0 && (
+
+        {loading && <p>Đang tải lộ trình cộng đồng...</p>}
+        {error && <p className="error">{error}</p>}
+
+        {!loading && !error && popular.length === 0 && (
+          <p>Không có lộ trình cộng đồng nào để hiển thị.</p>
+        )}
+
+        {!loading && !error && popular.length > 0 && (
           <section className="roadmap-section popular">
             <div className="grid-cards">
               {popular.map((rm, idx) => (

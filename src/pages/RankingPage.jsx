@@ -54,7 +54,7 @@ export default function RankingPage() {
       const user = localStorage.getItem('user');
       if (user) {
         const parsedUser = JSON.parse(user);
-        const name = parsedUser.userName || parsedUser.name || 'Người dùng';
+        const name = parsedUser.name || parsedUser.userName || 'Người dùng';
         setUserName(name);
         setAvatarInitial(name.charAt(0).toUpperCase());
       }

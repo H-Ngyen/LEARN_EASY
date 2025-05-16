@@ -70,6 +70,24 @@ export default function RoadMapApi() {
     }
   };
 
+  const getRoadmapCommunity = async () => {
+    try {
+      const response = await fetch(`${VITE_API_BASE_URL}/api/roadmap/community`, {
+        method: 'GET',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch community roadmap!')
+      }
+
+      const data = await response.json();
+      return data.roadmaps;
+    } catch (error) {
+      console.error('Error render community roadmap:', error);
+      throw error;
+    }
+  }
+
   const updateRoadmap = async (id, roadmapData) => {
     try {
       const response = await fetch(`${VITE_API_BASE_URL}/api/my/roadmap/update/${id}`, {
@@ -92,5 +110,5 @@ export default function RoadMapApi() {
     }
   };
 
-  return { createRoadMap, getRoadmapsByUser, getRoadmapById, updateRoadmap };
+  return { createRoadMap, getRoadmapsByUser, getRoadmapById, updateRoadmap, getRoadmapCommunity };
 }
