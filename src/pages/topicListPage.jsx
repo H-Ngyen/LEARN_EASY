@@ -12,6 +12,15 @@ const DURATIONS = ['1 Tháng', '3 Tháng', '6 Tháng'];
 const { getRoadmapsByUser } = RoadMapApi();
 const { getUserId } = UserAPI();
 
+// Hàm định dạng ngày thành dd/mm/yyyy
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // getMonth() trả về 0-11
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export default function TopicListPage() {
   const [roadmaps, setRoadmaps] = useState([]);
   const [error, setError] = useState(null);
@@ -148,7 +157,7 @@ export default function TopicListPage() {
               progress: (r.nodes.filter(n => n.data.status === '2').length / r.nodes.length) * 100 || 0,
               tags: [LEVELS[r.level] || 'Không xác định'],
               topics: r.nodes.length,
-              created: new Date(r.createdAt).toLocaleDateString(),
+              created: formatDate(r.createdAt), // Sử dụng hàm formatDate
               share: r.share === '1' ? '🌐 Đã chia sẻ' : '🔒 Riêng tư',
             };
             return (
@@ -164,7 +173,7 @@ export default function TopicListPage() {
                 </div>
 
                 <div className="info-row">
-                  <span className="created-date">Tạo: {display.created}</span>
+                  <span className="created-date">Ngày tạo: {display.created}</span>
                   <span className="topic-count">{display.topics} chủ đề</span>
                 </div>
 

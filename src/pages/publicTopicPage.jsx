@@ -15,12 +15,30 @@ export default function PublicTopicPage() {
   const [userName, setUserName] = useState('Người dùng'); // Default name
   const navigate = useNavigate();
 
+  // Hàm tạo gradient ngẫu nhiên với nhiều màu
+  const getRandomGradient = () => {
+    const getColor = () => {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    };
+
+    // Tạo 2-3 màu ngẫu nhiên
+    const colors = [getColor(), getColor(), getColor()];
+    // Tạo gradient với góc ngẫu nhiên (0-360 độ)
+    const angle = Math.floor(Math.random() * 360);
+    return `linear-gradient(${angle}deg, ${colors[0]}, ${colors[1]}, ${colors[2]})`;
+  };
+
   // Lấy thông tin user từ localStorage và hiển thị
   useEffect(() => {
     const user = localStorage.getItem('user');
     if (user) {
       const parsedUser = JSON.parse(user);
-      setUserName(parsedUser.name || parsedUser.userName || 'Người dùng'); // Use name or userName, fallback to default
+      setUserName(parsedUser.name || parsedUser.userName || 'Người dùng');
     }
   }, []);
 
@@ -40,13 +58,14 @@ export default function PublicTopicPage() {
         // Ánh xạ dữ liệu từ API để khớp với cấu trúc UI
         const formattedRoadmaps = roadmaps.map((rm) => ({
           id: rm.id,
-          coverUrl: rm.coverUrl || 'https://via.placeholder.com/600x400?text=Default+Image', // Fallback image nếu không có
+          coverUrl: rm.coverUrl || null, // Không sử dụng placeholder image
           title: rm.topic || rm.title || 'Untitled Roadmap',
-          duration: mapDuration(rm.duration), // Ánh xạ duration
-          levelLabel: mapLevel(rm.level), // Ánh xạ level
+          duration: mapDuration(rm.duration),
+          levelLabel: mapLevel(rm.level),
           author: {
             name: rm.author?.name || 'Unknown Author',
           },
+          backgroundGradient: getRandomGradient(), // Thêm gradient ngẫu nhiên
         }));
 
         setPopular(formattedRoadmaps);
@@ -217,7 +236,11 @@ export default function PublicTopicPage() {
                 <div key={idx} className="small-card">
                   <div
                     className="card-cover"
-                    style={{ backgroundImage: `url(${rm.coverUrl})` }}
+                    style={{
+                      background: rm.coverUrl ? `url(${rm.coverUrl})` : rm.backgroundGradient,
+                      backgroundSize: rm.coverUrl ? 'cover' : undefined,
+                      backgroundPosition: rm.coverUrl ? 'center' : undefined,
+                    }}
                   />
                   <div className="card-content">
                     <h4>{rm.title}</h4>
