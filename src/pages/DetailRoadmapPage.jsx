@@ -10,6 +10,7 @@ import ReactFlow, {
 import '../css/detailroadmap.css';
 import logo from '../assets/logo.png';
 import RoadMapApi from '../api/RoadMapApi';
+import MyRoadmapApi from '../api/MyRoadmapApi';
 
 // Các hằng số cho trình độ và thời gian
 const LEVELS = ['Mới bắt đầu', 'Trung cấp', 'Nâng cao'];
@@ -19,7 +20,8 @@ export default function DetailRoadmap() {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams();
-  const { getRoadmapById, updateRoadmap } = RoadMapApi();
+  const { getRoadmapById } = RoadMapApi();
+  const { updateRoadmap } = MyRoadmapApi();
 
   const [roadmap, setRoadmap] = useState(location.state?.roadmap || location.state || null);
   const [nodes, setNodes] = useState([]);
