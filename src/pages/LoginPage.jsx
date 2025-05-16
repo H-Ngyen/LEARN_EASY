@@ -77,13 +77,14 @@ const LoginPage = () => {
                 onChange={e => setPassword(e.target.value)}
                 required
                 placeholder="••••••••••"
+                className="password-input"
               />
               <button
                 type="button"
                 className="toggle-password"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? 'Hide' : 'Show'}
+                <i className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'}></i>
               </button>
             </div>
           </div>
