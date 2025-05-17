@@ -7,6 +7,7 @@ import Login from './pages/LoginPage';
 import Public from './pages/publicTopicPage';
 import Rank from './pages/RankingPage';
 import Register from './pages/RegisterPage';
+import PerformancePage from './pages/PerformencePage';
 
 export default function AppRoutes() {
   return (
@@ -14,9 +15,11 @@ export default function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/detail/:id" element={<Detail />} />
       <Route path="/list" element={<TopicList />} />
-      <Route path="/login" element={<Login />} />
       <Route path="/community" element={<Public />} />
       <Route path="/rank" element={<Rank />} />
+      <Route path="/performance" element={<PerformancePage />} />
+
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
     </Routes>
   );

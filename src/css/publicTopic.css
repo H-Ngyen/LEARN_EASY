@@ -124,40 +124,127 @@
 
 .small-card {
   background-color: white;
-  border-radius: 0.75rem;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.small-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
 }
 
 .small-card .card-cover {
-  height: 120px;
+  height: 150px; /* Tăng chiều cao để ảnh nền hiển thị đẹp hơn */
   background-size: cover;
   background-position: center;
+  position: relative;
 }
 
 .small-card .card-content {
-  padding: 1rem;
+  padding: 1.25rem; /* Tăng padding cho thoáng */
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem; /* Tăng khoảng cách giữa các thành phần */
   flex: 1;
 }
 
-.small-card .meta, .small-card .author {
-  font-size: 0.75rem;
-  color: var(--gray-500);
+.small-card .card-content h4 {
+  font-size: 1.1rem; /* Tăng kích thước tiêu đề */
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.small-card .meta {
+  font-size: 0.85rem; /* Tăng nhẹ kích thước font */
+  color: #7f8c8d;
+  display: flex;
+  gap: 15px; /* Tăng khoảng cách giữa duration và download count */
+  align-items: center;
+}
+
+.small-card .meta span {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+}
+
+.small-card .meta .icon-calendar::before,
+.small-card .meta .icon-download::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.small-card .meta .icon-calendar::before {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%237f8c8d"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V8h14v12zM7 10h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/></svg>');
+}
+
+.small-card .meta .icon-download::before {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%237f8c8d"><path d="M5 20h14v-2H5v2zM12 2l7 7h-4v9H9V9H5l7-7z"/></svg>');
+}
+
+.small-card .author {
+  font-size: 0.85rem; /* Tăng nhẹ kích thước font */
+  color: #7f8c8d;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.small-card .author .label.level {
+  background-color: #3498db; /* Màu xanh dương nổi bật */
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.small-card .author .name {
+  color: #2c3e50;
+  font-weight: 500;
 }
 
 .btn-view.small {
   margin-top: auto;
-  padding: 0.5rem;
-  font-size: 0.75rem;
+  background-color: #2ecc71; /* Màu xanh lá nổi bật */
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem; /* Tăng padding cho nút lớn hơn */
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-view.small:hover {
+  background-color: #27ae60; /* Màu xanh lá đậm hơn khi hover */
+}
+
+/* Animation khi card xuất hiện */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Style cho user-profile và user-info */
@@ -171,7 +258,7 @@
 .user-info {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* Khoảng cách giữa user-name và logout button */
+  gap: 0.5rem;
 }
 
 /* Style cho nút đăng xuất */
@@ -187,11 +274,11 @@
 }
 
 .logout-button:hover {
-  opacity: 0.7; /* Hiệu ứng hover */
+  opacity: 0.7;
 }
 
 .logout-button svg {
-  color: var(--text-secondary, #666); /* Màu icon, có thể tùy chỉnh */
+  color: var(--text-secondary, #666);
 }
 
 /* Đảm bảo user-name không bị lệch */

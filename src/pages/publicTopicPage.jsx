@@ -55,27 +55,29 @@ export default function PublicTopicPage() {
         setLoading(true);
         setError(null);
         const data = await getRoadmapCommunity();
-        console.log(data);
+        console.log('API Response:', data);
 
-        // Giả định API trả về data.roadmap là một mảng các roadmap
-        // Nếu API trả về data.roadmap là một object đơn, cần chuyển thành mảng
-        const roadmaps = Array.isArray(data) ? data : [data];
+        // Giả định API trả về data.roadmap hoặc data.roadmaps là một mảng các roadmap
+        const roadmaps = Array.isArray(data.roadmaps) ? data.roadmaps : Array.isArray(data) ? data : [data] || [];
 
         // Ánh xạ dữ liệu từ API để khớp với cấu trúc UI
         const formattedRoadmaps = roadmaps.map((rm) => ({
           id: rm.id,
-          coverUrl: rm.coverUrl || null, // Không sử dụng placeholder image
+          coverUrl: rm.coverUrl || null,
           title: rm.topic || rm.title || 'Untitled Roadmap',
           duration: mapDuration(rm.duration),
           levelLabel: mapLevel(rm.level),
           author: {
             name: rm.author?.name || 'Unknown Author',
           },
-          backgroundGradient: getRandomGradient(), // Thêm gradient ngẫu nhiên
+          downloadCount: rm.downloadCount || 0, // Thêm downloadCount
+          backgroundGradient: getRandomGradient(),
         }));
 
+        console.log('Formatted roadmaps:', formattedRoadmaps);
         setPopular(formattedRoadmaps);
-      } catch {
+      } catch (err) {
+        console.error('Fetch error:', err);
         setError('Không thể tải lộ trình cộng đồng. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
@@ -213,6 +215,22 @@ export default function PublicTopicPage() {
             </svg>
             <span>Bảng xếp hạng</span>
           </a>
+          <a href="/performance" className="nav-item">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9V3" />
+            </svg>
+            <span>Thống kê hiệu suất</span>
+          </a>
         </nav>
 
         <div className="user-profile">
@@ -271,6 +289,9 @@ export default function PublicTopicPage() {
                       <span>
                         <i className="icon-calendar" /> {rm.duration}
                       </span>
+                      <span>
+                        <i className="icon-download" /> {rm.downloadCount} lượt tải
+                      </span> {/* Hiển thị downloadCount */}
                     </div>
                     <div className="author">
                       <span className="label level">{rm.levelLabel}</span>
@@ -282,7 +303,7 @@ export default function PublicTopicPage() {
                       className="btn-view small"
                       onClick={() => handleViewRoadmap(rm.id)}
                     >
-                      Xem lộ trình
+                      Tải về
                     </button>
                   </div>
                 </div>
@@ -293,4 +314,4 @@ export default function PublicTopicPage() {
       </main>
     </div>
   );
-}
+} 
