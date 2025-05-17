@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 
 import Home from './pages/HomePage';
 import Detail from './pages/DetailRoadmapPage';
-import TopicList from './pages/TopicListPage';
+import TopicList from './pages/topicListPage';
 import Login from './pages/LoginPage';
 import Public from './pages/publicTopicPage';
 import Rank from './pages/RankingPage';
