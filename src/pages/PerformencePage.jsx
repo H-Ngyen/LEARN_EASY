@@ -179,6 +179,7 @@ export default function PerformancePage() {
       {/* Main Content */}
       <main className="main">
         <header className="page-header">
+        
           <h1 className="page-title">Thống kê hiệu suất học tập</h1>
         </header>
 
